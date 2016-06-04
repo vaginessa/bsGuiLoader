@@ -316,12 +316,22 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         try {
             List<String> DownloadURLresults = getLinksFromPage(URL, "div#sp_left div#video_actions div a");
             String DownloadURL = DownloadURLresults.get(0);
-            ProcessBuilder pbuilder = new ProcessBuilder(
+            List<String> pbuilder_arguments = new ArrayList<String>();
+            pbuilder_arguments.add(youtubeDlBinary);
+            pbuilder_arguments.add("--output");
+            pbuilder_arguments.add(FileDir + "/%(title)s.%(ext)s");
+            pbuilder_arguments.add(DownloadURL);
+            if (!DownloadManagerPath.isEmpty()) {
+                pbuilder_arguments.add("--external-downloader"); 
+                pbuilder_arguments.add(DownloadManagerPath);
+            } 
+            /*ProcessBuilder pbuilder = new ProcessBuilder(
                     youtubeDlBinary, 
                     "--output",
                     FileDir + "/%(title)s.%(ext)s",
-                     DownloadURL
-            );
+                    DownloadURL
+            );*/
+            ProcessBuilder pbuilder = new ProcessBuilder(pbuilder_arguments);
             pbuilder.redirectErrorStream(true);
             
             Process p = pbuilder.start();
@@ -632,6 +642,24 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             ex.printStackTrace();
         }
     }
+    // Suche nach unterstützten Download-Managern
+    private String DownloadManagerPath = "";
+    private void checkForManagers() {
+        // Zurzeit wird nur aria2c unterstützt (youtube-dl unterstützt theoretisch mehr,
+        // jedoch macht derzeit ausschließlich aria2 Sinn.
+        String[] managers = { "aria2c" };
+        // TODO: Windows Installationspfade hinzufügen
+        String[] searchPaths = { "/usr/bin", "/usr/local/bin" };
+        for (String searchPath: searchPaths) {
+            for (String manager: managers) {
+                File managerFile = new File(searchPath + File.separator + manager);
+                if (managerFile.exists() && !managerFile.isDirectory()) {
+                    DownloadManagerPath = searchPath + File.separator + manager;
+                    break;
+                }
+            }
+        }
+    }
     private void checkYouTubeDL() {
         String DefaultPath = System.getProperty("user.dir") 
                 + File.separator
@@ -740,6 +768,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 MainWindow.setIconImage(img.getImage());
                 MainWindow.setVisible(true);
                 MainWindow.loadHosters();
+                MainWindow.checkForManagers();
                 //MainWindow.formatList();
                 //new bsGuiMain().setVisible(true);
                 //new comment
