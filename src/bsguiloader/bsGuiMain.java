@@ -360,10 +360,10 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                         return false;
                     }
                     if (!StringToConvert.isEmpty()) {
-                        String ProgressStatus="";
+                        /*String ProgressStatus="";
                         for (int i = 1; i < ProgramOutput.length; i++) {
                             ProgressStatus += ProgramOutput[i];
-                        }
+                        }*/
                         final int value = (int)(Float.parseFloat(
                                     StringToConvert.substring(
                                             0,
