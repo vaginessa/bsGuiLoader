@@ -57,7 +57,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 /**
  *
- * @author administrator
+ * @author David Bitterlich
  */
 public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
 
