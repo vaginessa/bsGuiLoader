@@ -316,7 +316,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             // episodeNr, episodeTitle
             int episodeNr;
             String[] episodeURLsplittedBySlash = URL.split("/");
-            System.out.println(episodeURLsplittedBySlash[6]);
             String[] episodeURLsplittedByHyphen = episodeURLsplittedBySlash[6].split("-");
             episodeNr = Integer.parseInt(episodeURLsplittedByHyphen[0]);
             String episodeTitle="";
@@ -341,7 +340,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                  DownloadURL = DownloadURLresults.get(0);
             } else {
                     DownloadURL = getFrameFromPage(URL, "div#root section.serie div#sp_left iframe");
-                    System.out.println("::: " + DownloadURL);
             }
             
             
