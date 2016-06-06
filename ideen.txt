@@ -1,0 +1,8 @@
+#1: Anpassung von youtube-dl -o: <Serie><episode>.%(ext)s
+#2: DownloadQue bearbeitbar machen über extra Dialog
+#3: Konfigurationsfenster für Einstellungen
+##1: Default Downloadpath
+##2: Standard Hoster
+#4: eigene Methode/Klasse schreiben, um auf youtube-dl zu verzichten
+    (Parsen der einzelnen Hosterseiten und anschließend in aria2c einreihen)
+#5: GUI in SWT neu implementieren

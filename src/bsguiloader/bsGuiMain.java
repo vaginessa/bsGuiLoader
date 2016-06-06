@@ -101,9 +101,9 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jProgressBar1 = new JProgressBar();
         jLabel4 = new JLabel();
         jProgressBar2 = new JProgressBar();
+        jLabel5 = new JLabel();
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Burning Series Loader");
         setName("Form"); // NOI18N
 
         jLabel1.setText("Serie:");
@@ -157,11 +157,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
 
         jCheckBox1.setLabel("Filme herunterladen");
         jCheckBox1.setName("checkMovies"); // NOI18N
-        jCheckBox1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
-            }
-        });
 
         jButton2.setText("Download starten");
         jButton2.setEnabled(false);
@@ -181,15 +176,15 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jLabel3.setText("Gesamtfortschritt:");
         jLabel3.setName("jLabel3"); // NOI18N
 
-        jProgressBar1.setMaximum(5000);
         jProgressBar1.setName("jProgressBar1"); // NOI18N
 
         jLabel4.setText("Fortschritt aktuell:");
         jLabel4.setName("jLabel4"); // NOI18N
 
-        jProgressBar2.setMaximum(1000);
         jProgressBar2.setName("jProgressBar2"); // NOI18N
-        jProgressBar2.setStringPainted(true);
+
+        jLabel5.setText("Status");
+        jLabel5.setName("jLabelOutput"); // NOI18N
 
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -197,6 +192,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel5, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -230,7 +226,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     .addComponent(jTextField1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(jCheckBox1)
@@ -243,9 +239,11 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(jProgressBar2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
-                .addGap(10, 10, 10))
+                    .addComponent(jLabel4)
+                    .addComponent(jProgressBar2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel5)
+                .addContainerGap())
         );
 
         pack();
@@ -312,14 +310,45 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }                
         });
     }
-    private boolean queryYouTube(String URL, String FileDir) {
+    private boolean queryYouTube(String URL, String FileDir, String Serie) {
         try {
+            // erhalte Episodentitel und Episode von Videolink:
+            // episodeNr, episodeTitle
+            int episodeNr;
+            String[] episodeURLsplittedBySlash = URL.split("/");
+            System.out.println(episodeURLsplittedBySlash[6]);
+            String[] episodeURLsplittedByHyphen = episodeURLsplittedBySlash[6].split("-");
+            episodeNr = Integer.parseInt(episodeURLsplittedByHyphen[0]);
+            String episodeTitle="";
+            for (int i = 1; i < episodeURLsplittedByHyphen.length; i++) {
+                episodeTitle += " ";
+                episodeTitle += episodeURLsplittedByHyphen[i];
+            }
+            // Dateinamenkorrektur nach dem Schema: <Serie> E<Nummer>.<ext>
+            String episodeToString="";
+            if (DownloadQue.size() > 1000) {
+                episodeToString = "0";
+            }
+            if (episodeNr < 10) {
+                episodeToString = "00";
+            } else if (episodeNr < 100) {
+                episodeToString = "0";
+            }
+            episodeToString += Integer.toString(episodeNr);
             List<String> DownloadURLresults = getLinksFromPage(URL, "div#sp_left div#video_actions div a");
-            String DownloadURL = DownloadURLresults.get(0);
+            String DownloadURL;
+            if (!DownloadURLresults.get(0).isEmpty()) {
+                 DownloadURL = DownloadURLresults.get(0);
+            } else {
+                    DownloadURL = getFrameFromPage(URL, "div#root section.serie div#sp_left iframe");
+                    System.out.println("::: " + DownloadURL);
+            }
+            
+            
             List<String> pbuilder_arguments = new ArrayList<String>();
             pbuilder_arguments.add(youtubeDlBinary);
             pbuilder_arguments.add("--output");
-            pbuilder_arguments.add(FileDir + "/%(title)s.%(ext)s");
+            pbuilder_arguments.add(FileDir + File.separator + Serie + " E" + episodeToString + episodeTitle + ".%(ext)s");
             pbuilder_arguments.add(DownloadURL);
             if (!DownloadManagerPath.isEmpty()) {
                 pbuilder_arguments.add("--external-downloader"); 
@@ -348,6 +377,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }
             bre.close();
             
+            String LabelTxt = jLabel5.getText();
             while ((line = br.readLine()) != null) {
                 System.out.println(line);
                 String[] ProgramOutput = line.split(" ");
@@ -355,7 +385,11 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 jProgressBar2.setMinimum(0);
                 jProgressBar2.setMaximum(1000);
                 jProgressBar2.setStringPainted(true);
-                
+                String ProgressStatus="";
+                for (int i = 1; i < ProgramOutput.length; i++) {
+                    ProgressStatus += ProgramOutput[i];
+                }
+                jLabel5.setText(LabelTxt + ": " + ProgressStatus);
                 if (
                         ProgramOutput[0].equals("[download]") 
                         && !ProgramOutput[1].contains("Destination") 
@@ -370,10 +404,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                         return false;
                     }
                     if (!StringToConvert.isEmpty()) {
-                        /*String ProgressStatus="";
-                        for (int i = 1; i < ProgramOutput.length; i++) {
-                            ProgressStatus += ProgramOutput[i];
-                        }*/
                         final int value = (int)(Float.parseFloat(
                                     StringToConvert.substring(
                                             0,
@@ -381,6 +411,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                                     )
                                 ) * 10.0f);
                         pb2Update(value);
+                        
                         //jProgressBar2.setValue(value);
                         //jProgressBar2.setString(ProgressStatus);
                     }
@@ -436,6 +467,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         
         for (int i = 0; i < DownloadQue.size(); i++) {
             System.out.println(DownloadQue.get(i));
+            jLabel5.setText("Download Datei " + (i+1) + "/" + DownloadQue.size());
             final int value = i;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -444,7 +476,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 }                
             });
             //jProgressBar1.setValue(i);
-            queryYouTube(DownloadQue.get(i), FileDir);
+            queryYouTube(DownloadQue.get(i), FileDir, jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString());
         }        
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -467,13 +499,13 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     }//GEN-LAST:event_jCheckBox1ActionPerformed
     
     private void updateComboBoxEvent() {
-        if (jComboBox1.isEnabled()) {
+        if (jComboBox1.isEnabled() && jComboBox1.getSelectedIndex() > 0) {
             int SelectedRow = jTable1.getSelectedRow();
             int CellValue = Integer.parseInt(jTable1.getModel()
                     .getValueAt(jTable1.convertRowIndexToModel(SelectedRow), 1).toString());
             String[] ComboCaption = jComboBox1.getItemAt(jComboBox1.getSelectedIndex()).split(":");
             int ComboValue = Integer.parseInt(ComboCaption[1].trim());
-            if (CellValue != ComboValue && CellValue > 0 && ComboValue > 0) {
+            if (!DownloadQue.contains(ComboCaption[0].trim().toLowerCase())) {
                 jTable1.setValueAt(ComboValue, SelectedRow, 1);
                 System.out.println("updateComboBoxEvent");
                 getAllLinksByHoster(ComboCaption[0]);
@@ -505,6 +537,18 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
         return SearchResults;
     }
+    private String getFrameFromPage(String URL, String SearchString) throws IOException {
+        String res = "";
+        Document doc = Jsoup.connect(URL)
+                .followRedirects(true)
+                .ignoreHttpErrors(true)
+                .timeout(30000)
+                .userAgent(userAgent)
+                .get();
+        Element result = doc.select(SearchString).first();
+        res = result.absUrl("src");        
+        return res;
+    }
     private boolean SupportedHosterByURL(String URL) {
         String[] SplittedURL = URL.split("/");
         String Hoster = SplittedURL[SplittedURL.length-1];
@@ -530,6 +574,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private List<String> DownloadQue = new ArrayList<String>();
     private void updateHosterComboBox() {
         jComboBox1.removeAllItems();
+        jComboBox1.addItem("");
         List<String> HostersAdded = new ArrayList<String>();
         for (String SupportedHosterFromList: EpisodeListWithHoster) {
             String[] SplittedLink = SupportedHosterFromList.split("/");
@@ -785,6 +830,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private JLabel jLabel2;
     private JLabel jLabel3;
     private JLabel jLabel4;
+    private JLabel jLabel5;
     private JProgressBar jProgressBar1;
     private JProgressBar jProgressBar2;
     private JScrollPane jScrollPane1;
