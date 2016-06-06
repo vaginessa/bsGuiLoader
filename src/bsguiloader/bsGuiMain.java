@@ -49,6 +49,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.lang.Object;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.concurrent.Task;
@@ -101,7 +102,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jProgressBar1 = new JProgressBar();
         jLabel4 = new JLabel();
         jProgressBar2 = new JProgressBar();
-        jLabel5 = new JLabel();
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -183,16 +183,12 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
 
         jProgressBar2.setName("jProgressBar2"); // NOI18N
 
-        jLabel5.setText("Status");
-        jLabel5.setName("jLabelOutput"); // NOI18N
-
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel5, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -226,7 +222,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     .addComponent(jTextField1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 364, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(jCheckBox1)
@@ -241,8 +237,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4)
                     .addComponent(jProgressBar2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel5)
                 .addContainerGap())
         );
 
@@ -365,9 +359,8 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             //String params = youtubeDlBinary + " " + DownloadURL + " -o " + "\'" + FileDir + "/%(title)s.%(ext)s" + "\' ";
             //System.out.println(params);
             //Process p = Runtime.getRuntime().exec(params);
-            InputStream is = p.getInputStream();
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
             BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
             String line;
             while ((line = bre.readLine()) != null) {
@@ -375,7 +368,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }
             bre.close();
             
-            String LabelTxt = jLabel5.getText();
             while ((line = br.readLine()) != null) {
                 System.out.println(line);
                 String[] ProgramOutput = line.split(" ");
@@ -387,7 +379,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 for (int i = 1; i < ProgramOutput.length; i++) {
                     ProgressStatus += ProgramOutput[i];
                 }
-                jLabel5.setText(LabelTxt + ": " + ProgressStatus);
                 if (
                         ProgramOutput[0].equals("[download]") 
                         && !ProgramOutput[1].contains("Destination") 
@@ -462,20 +453,12 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         );
         jProgressBar1.setMaximum(MaxNumber);
         jProgressBar1.setMinimum(0);
-        
         for (int i = 0; i < DownloadQue.size(); i++) {
             System.out.println(DownloadQue.get(i));
-            jLabel5.setText("Download Datei " + (i+1) + "/" + DownloadQue.size());
-            final int value = i;
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                     pb1Update(value);
-                }                
-            });
             //jProgressBar1.setValue(i);
             queryYouTube(DownloadQue.get(i), FileDir, jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString());
         }        
+
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jCheckBox1ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
@@ -828,7 +811,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private JLabel jLabel2;
     private JLabel jLabel3;
     private JLabel jLabel4;
-    private JLabel jLabel5;
     private JProgressBar jProgressBar1;
     private JProgressBar jProgressBar2;
     private JScrollPane jScrollPane1;
