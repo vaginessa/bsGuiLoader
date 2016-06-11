@@ -293,17 +293,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
         return false;
     }
-    private void pb1Update(int pbValue) {
-        jProgressBar1.setValue(pbValue);
-    }
-    private void pb2Update(int pbValue) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                 jProgressBar2.setValue(pbValue);
-            }                
-        });
-    }
+
     private boolean queryYouTube(String URL, String FileDir, String Serie) {
         try {
             // erhalte Episodentitel und Episode von Videolink:
@@ -399,9 +389,9 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                                             StringToConvert.length()-1
                                     )
                                 ) * 10.0f);
-                        pb2Update(value);
                         
-                        //jProgressBar2.setValue(value);
+                        jProgressBar2.setValue(value);
+                        jProgressBar2.paint(jProgressBar2.getGraphics());
                         //jProgressBar2.setString(ProgressStatus);
                     }
                 }
@@ -448,14 +438,15 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             se.printStackTrace();
         }
         System.setProperty("user.dir", FileDir);
-        int MaxNumber = Integer.parseInt(
+        int MaxNumber = DownloadQue.size();/*Integer.parseInt(
                 jTable1.getValueAt(jTable1.getSelectedRow(), 1).toString()
-        );
+        );*/
         jProgressBar1.setMaximum(MaxNumber);
         jProgressBar1.setMinimum(0);
         for (int i = 0; i < DownloadQue.size(); i++) {
             System.out.println(DownloadQue.get(i));
-            //jProgressBar1.setValue(i);
+            jProgressBar1.setValue(i);
+            jProgressBar1.paint(jProgressBar1.getGraphics());
             queryYouTube(DownloadQue.get(i), FileDir, jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString());
         }        
 
