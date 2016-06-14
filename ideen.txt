@@ -1,5 +1,5 @@
-#1: Anpassung von youtube-dl -o: <Serie><episode>.%(ext)s
-#2: DownloadQue bearbeitbar machen über extra Dialog
+#1: Anpassung von youtube-dl -o: <Serie><episode>.%(ext)s [done]
+#2: DownloadQue bearbeitbar machen über extra Dialog (verschoben nach #5)
 #3: Konfigurationsfenster für Einstellungen
 ##1: Default Downloadpath
 ##2: Standard Hoster

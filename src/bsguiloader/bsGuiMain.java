@@ -677,6 +677,34 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }
         }
     }
+    private String FileNameMask;
+    private void loadFromConfig() {
+        File f = new File("settings.conf");
+        String line;
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(f));
+            do {
+                line = br.readLine();
+                String[] SplittedSetting = line.split("=");
+                switch (SplittedSetting[0]) {
+                    case "FileNameMask":
+                        FileNameMask = SplittedSetting[1];
+                        break;
+                    // TODO: weitere Settings einstellen
+                }
+            } while (line != null);
+            br.close();
+        } catch (Exception e) {
+            /*
+                <name> = Name der Serie
+                <episode> = Episodennummer
+                <season> = Staffel
+                <title> = Titel der Episode
+                <ext> = Dateityp (wird für youtube-dl durch %(ext) ersetzt)
+            */
+            FileNameMask = "<name> E<episode> <title>.<ext>";
+        }
+    }
     private void checkYouTubeDL() {
         String DefaultPath = System.getProperty("user.dir") 
                 + File.separator
@@ -780,6 +808,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 bsGuiMain MainWindow = new bsGuiMain();
+                MainWindow.loadFromConfig();
                 MainWindow.setTitle("Burning Series Loader");
                 ImageIcon img = new ImageIcon("icon");
                 MainWindow.setIconImage(img.getImage());
