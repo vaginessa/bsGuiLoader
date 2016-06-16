@@ -293,21 +293,39 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
         return false;
     }
-
+    private String replaceStringByParams(String[] episodeVariables) {
+        String resultStr = FileNameMask;
+        for (String toReplaceString: episodeVariables)
+        {
+            String[] toReplaceArray = toReplaceString.split("/");
+            resultStr = resultStr.replaceAll(toReplaceArray[0], toReplaceArray[1]);
+        }
+        return resultStr;
+    }
     private boolean queryYouTube(String URL, String FileDir, String Serie) {
         try {
             // erhalte Episodentitel und Episode von Videolink:
             // episodeNr, episodeTitle
             int episodeNr;
             String[] episodeURLsplittedBySlash = URL.split("/");
+            /*
+                episodeVars[0] = Serientitel
+                episodeVars[1] = Episode relativ zur Staffel
+                episodeVars[2] = Serienstaffel
+                episodeVars[3] = Episodentitel
+            */
+            String[] episodeVars = new String[4];
             String[] episodeURLsplittedByHyphen = episodeURLsplittedBySlash[6].split("-");
             episodeNr = Integer.parseInt(episodeURLsplittedByHyphen[0]);
-            String episodeTitle="";
+            episodeVars[0] = "<name>" + "/" + Serie;
+            episodeVars[1] = "<episode>" + "/" + episodeURLsplittedByHyphen[0];
+            episodeVars[3] = "<title>" + "/";
+            episodeVars[2] = "<season>" + "/" + episodeURLsplittedBySlash[5];
             for (int i = 1; i < episodeURLsplittedByHyphen.length; i++) {
-                episodeTitle += " ";
-                episodeTitle += episodeURLsplittedByHyphen[i];
+                episodeVars[3] += " ";
+                episodeVars[3] += episodeURLsplittedByHyphen[i];
             }
-            // Dateinamenkorrektur nach dem Schema: <Serie> E<Nummer>.<ext>
+            // Dateinamenkorrektur nach dem Schema: <Serie> S<Staffel>E<Nummer> <Titel>.<ext>
             String episodeToString="";
             if (DownloadQue.size() > 1000) {
                 episodeToString = "0";
@@ -323,6 +341,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             if (!DownloadURLresults.get(0).isEmpty()) {
                  DownloadURL = DownloadURLresults.get(0);
             } else {
+                // für OpenLoad verwendet, aber OpenLoad ist nicht nutzbar im Moment
                     DownloadURL = getFrameFromPage(URL, "div#root section.serie div#sp_left iframe");
             }
             
@@ -330,25 +349,22 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             List<String> pbuilder_arguments = new ArrayList<String>();
             pbuilder_arguments.add(youtubeDlBinary);
             pbuilder_arguments.add("--output");
-            pbuilder_arguments.add(FileDir + File.separator + Serie + " E" + episodeToString + episodeTitle + ".%(ext)s");
+            pbuilder_arguments.add(
+                    FileDir 
+                    + File.separator 
+                    + replaceStringByParams(episodeVars)
+            );
+            System.out.println(replaceStringByParams(episodeVars));
+            System.exit(0);
             pbuilder_arguments.add(DownloadURL);
             if (!DownloadManagerPath.isEmpty()) {
                 pbuilder_arguments.add("--external-downloader"); 
                 pbuilder_arguments.add(DownloadManagerPath);
             } 
-            /*ProcessBuilder pbuilder = new ProcessBuilder(
-                    youtubeDlBinary, 
-                    "--output",
-                    FileDir + "/%(title)s.%(ext)s",
-                    DownloadURL
-            );*/
             ProcessBuilder pbuilder = new ProcessBuilder(pbuilder_arguments);
             pbuilder.redirectErrorStream(true);
             
             Process p = pbuilder.start();
-            //String params = youtubeDlBinary + " " + DownloadURL + " -o " + "\'" + FileDir + "/%(title)s.%(ext)s" + "\' ";
-            //System.out.println(params);
-            //Process p = Runtime.getRuntime().exec(params);
 
             BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
             BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
@@ -623,7 +639,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                             });
                         }
                 }
-                if (series.size() == 0) { 
+                if (series.isEmpty()) { 
                     System.err.println("Probleme beim Holen der Serien... wiederhole");
                     if (repeat > 150) {
                         System.err.println("Kann keine Verbindung zu BurningSeries aufbauen... breche ab.");
@@ -677,6 +693,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }
         }
     }
+    // Settings
     private String FileNameMask;
     private void loadFromConfig() {
         File f = new File("settings.conf");
@@ -702,7 +719,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 <title> = Titel der Episode
                 <ext> = Dateityp (wird für youtube-dl durch %(ext) ersetzt)
             */
-            FileNameMask = "<name> E<episode> <title>.<ext>";
+            FileNameMask = "<name> S<season>E<episode> <title>.<ext>";
         }
     }
     private void checkYouTubeDL() {
