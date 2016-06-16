@@ -354,8 +354,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     + File.separator 
                     + replaceStringByParams(episodeVars)
             );
-            System.out.println(replaceStringByParams(episodeVars));
-            System.exit(0);
             pbuilder_arguments.add(DownloadURL);
             if (!DownloadManagerPath.isEmpty()) {
                 pbuilder_arguments.add("--external-downloader"); 
