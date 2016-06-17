@@ -300,7 +300,15 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             String[] toReplaceArray = toReplaceString.split("/");
             resultStr = resultStr.replaceAll(toReplaceArray[0], toReplaceArray[1]);
         }
+        resultStr = resultStr.replaceAll("<ext>", "%(ext)s");
         return resultStr;
+    }
+    private String getNulls(int input) {
+        String returnString="";    
+        if (input < 10) {
+                returnString = "0";
+        } 
+        return returnString;
     }
     private boolean queryYouTube(String URL, String FileDir, String Serie) {
         try {
@@ -318,30 +326,20 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             String[] episodeURLsplittedByHyphen = episodeURLsplittedBySlash[6].split("-");
             episodeNr = Integer.parseInt(episodeURLsplittedByHyphen[0]);
             episodeVars[0] = "<name>" + "/" + Serie;
-            episodeVars[1] = "<episode>" + "/" + episodeURLsplittedByHyphen[0];
             episodeVars[3] = "<title>" + "/";
-            episodeVars[2] = "<season>" + "/" + episodeURLsplittedBySlash[5];
+            episodeVars[2] = "<season>" + "/" + getNulls(Integer.parseInt(episodeURLsplittedBySlash[5])) + episodeURLsplittedBySlash[5];
             for (int i = 1; i < episodeURLsplittedByHyphen.length; i++) {
                 episodeVars[3] += " ";
                 episodeVars[3] += episodeURLsplittedByHyphen[i];
             }
             // Dateinamenkorrektur nach dem Schema: <Serie> S<Staffel>E<Nummer> <Titel>.<ext>
-            String episodeToString="";
-            if (DownloadQue.size() > 1000) {
-                episodeToString = "0";
-            }
-            if (episodeNr < 10) {
-                episodeToString = "00";
-            } else if (episodeNr < 100) {
-                episodeToString = "0";
-            }
-            episodeToString += Integer.toString(episodeNr);
+            episodeVars[1] = "<episode>" + "/" + getNulls(episodeNr) + episodeURLsplittedByHyphen[0];
             List<String> DownloadURLresults = getLinksFromPage(URL, "div#sp_left div#video_actions div a");
             String DownloadURL;
             if (!DownloadURLresults.get(0).isEmpty()) {
                  DownloadURL = DownloadURLresults.get(0);
             } else {
-                // für OpenLoad verwendet, aber OpenLoad ist nicht nutzbar im Moment
+                    // für OpenLoad verwendet, aber OpenLoad ist nicht nutzbar im Moment
                     DownloadURL = getFrameFromPage(URL, "div#root section.serie div#sp_left iframe");
             }
             
