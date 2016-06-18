@@ -15,6 +15,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -105,6 +107,11 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
+        addWindowListener(new WindowAdapter() {
+            public void windowOpened(WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         jLabel1.setText("Serie:");
         jLabel1.setName("jLabel1"); // NOI18N
@@ -177,11 +184,13 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jLabel3.setName("jLabel3"); // NOI18N
 
         jProgressBar1.setName("jProgressBar1"); // NOI18N
+        jProgressBar1.setStringPainted(true);
 
         jLabel4.setText("Fortschritt aktuell:");
         jLabel4.setName("jLabel4"); // NOI18N
 
         jProgressBar2.setName("jProgressBar2"); // NOI18N
+        jProgressBar2.setStringPainted(true);
 
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -282,7 +291,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         doTableEvent();
     }//GEN-LAST:event_jTable1MousePressed
 
-    private boolean checkIfNumber(String InputString) {
+    /*private boolean checkIfNumber(String InputString) {
         if (InputString.length() > 0) {
             if (InputString.substring(
                     0, 
@@ -292,7 +301,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }
         }
         return false;
-    }
+    }*/
     private String replaceStringByParams(String[] episodeVariables) {
         String resultStr = FileNameMask;
         for (String toReplaceString: episodeVariables)
@@ -311,115 +320,24 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         return returnString;
     }
     private boolean queryYouTube(String URL, String FileDir, String Serie) {
-        try {
-            // erhalte Episodentitel und Episode von Videolink:
-            // episodeNr, episodeTitle
-            int episodeNr;
-            String[] episodeURLsplittedBySlash = URL.split("/");
-            /*
-                episodeVars[0] = Serientitel
-                episodeVars[1] = Episode relativ zur Staffel
-                episodeVars[2] = Serienstaffel
-                episodeVars[3] = Episodentitel
-            */
-            String[] episodeVars = new String[4];
-            String[] episodeURLsplittedByHyphen = episodeURLsplittedBySlash[6].split("-");
-            episodeNr = Integer.parseInt(episodeURLsplittedByHyphen[0]);
-            episodeVars[0] = "<name>" + "/" + Serie;
-            episodeVars[3] = "<title>" + "/";
-            episodeVars[2] = "<season>" + "/" + getNulls(Integer.parseInt(episodeURLsplittedBySlash[5])) + episodeURLsplittedBySlash[5];
-            for (int i = 1; i < episodeURLsplittedByHyphen.length; i++) {
-                episodeVars[3] += " ";
-                episodeVars[3] += episodeURLsplittedByHyphen[i];
-            }
-            // Dateinamenkorrektur nach dem Schema: <Serie> S<Staffel>E<Nummer> <Titel>.<ext>
-            episodeVars[1] = "<episode>" + "/" + getNulls(episodeNr) + episodeURLsplittedByHyphen[0];
-            List<String> DownloadURLresults = getLinksFromPage(URL, "div#sp_left div#video_actions div a");
-            String DownloadURL;
-            if (!DownloadURLresults.get(0).isEmpty()) {
-                 DownloadURL = DownloadURLresults.get(0);
-            } else {
-                    // für OpenLoad verwendet, aber OpenLoad ist nicht nutzbar im Moment
-                    DownloadURL = getFrameFromPage(URL, "div#root section.serie div#sp_left iframe");
-            }
-            
-            
-            List<String> pbuilder_arguments = new ArrayList<String>();
-            pbuilder_arguments.add(youtubeDlBinary);
-            pbuilder_arguments.add("--output");
-            pbuilder_arguments.add(
-                    FileDir 
-                    + File.separator 
-                    + replaceStringByParams(episodeVars)
-            );
-            pbuilder_arguments.add(DownloadURL);
-            if (!DownloadManagerPath.isEmpty()) {
-                pbuilder_arguments.add("--external-downloader"); 
-                pbuilder_arguments.add(DownloadManagerPath);
-            } 
-            ProcessBuilder pbuilder = new ProcessBuilder(pbuilder_arguments);
-            pbuilder.redirectErrorStream(true);
-            
-            Process p = pbuilder.start();
+        this.DownloadProcess = new bsDownProc(
+                //pbuilder_arguments, 
+                this.getJProgressBar2(), 
+                youtubeDlBinary, 
+                URL, 
+                FileDir, 
+                Serie,
+                DownloadManagerPath,
+                FileNameMask
+        );
+        DownloadProcess.start();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            String line;
-            while ((line = bre.readLine()) != null) {
-                System.err.println(line);
-            }
-            bre.close();
-            
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
-                String[] ProgramOutput = line.split(" ");
-
-                jProgressBar2.setMinimum(0);
-                jProgressBar2.setMaximum(1000);
-                jProgressBar2.setStringPainted(true);
-                String ProgressStatus="";
-                for (int i = 1; i < ProgramOutput.length; i++) {
-                    ProgressStatus += ProgramOutput[i];
-                }
-                if (
-                        ProgramOutput[0].equals("[download]") 
-                        && !ProgramOutput[1].contains("Destination") 
-                        && !ProgramOutput[1].contains("Resumin")
-                    ) {
-                    String StringToConvert="";
-                    if (checkIfNumber(ProgramOutput[2])) {
-                        StringToConvert = ProgramOutput[2];
-                    } else if (checkIfNumber(ProgramOutput[3])) {
-                        StringToConvert = ProgramOutput[3];
-                    } else {
-                        return false;
-                    }
-                    if (!StringToConvert.isEmpty()) {
-                        final int value = (int)(Float.parseFloat(
-                                    StringToConvert.substring(
-                                            0,
-                                            StringToConvert.length()-1
-                                    )
-                                ) * 10.0f);
-                        
-                        jProgressBar2.setValue(value);
-                        jProgressBar2.paint(jProgressBar2.getGraphics());
-                        //jProgressBar2.setString(ProgressStatus);
-                    }
-                }
-                
-            }
-            br.close();
-            //p.destroy();
-            p.waitFor();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        } catch (InterruptedException ie) {
-            ie.printStackTrace();
+        while (DownloadProcess.isAlive()) {
+            repaint();
         }
         return true;
     }
-    private String youtubeDlBinary="";
+    public String youtubeDlBinary="";
     private String correctify(String Input) {
         String toRemove = "-.,:;/'_<>|";
         for (int i = 0; i < toRemove.length(); i++) {
@@ -453,13 +371,35 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         int MaxNumber = DownloadQue.size();/*Integer.parseInt(
                 jTable1.getValueAt(jTable1.getSelectedRow(), 1).toString()
         );*/
-        jProgressBar1.setMaximum(MaxNumber);
-        jProgressBar1.setMinimum(0);
+        try {
+            this.pbHnd_pbar1.start();
+            pbHnd_pbar1.setMinimum(0);
+            pbHnd_pbar1.setMaximum(MaxNumber);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            this.pbHnd_pbar1.cmd(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        pbHnd_pbar1.setValue(0);
         for (int i = 0; i < DownloadQue.size(); i++) {
-            System.out.println(DownloadQue.get(i));
-            jProgressBar1.setValue(i);
-            jProgressBar1.paint(jProgressBar1.getGraphics());
+            //System.out.println(DownloadQue.get(i));
+            try {
+                this.pbHnd_pbar1.setValue(i);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            //jProgressBar1.setValue(i);
+            //jProgressBar1.paint(jProgressBar1.getGraphics());
+
             queryYouTube(DownloadQue.get(i), FileDir, jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString());
+        }  
+        try {
+            this.pbHnd_pbar1.cmd(false);
+        } catch (Exception e) {
+            e.printStackTrace();
         }        
 
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -481,7 +421,16 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }
         }
     }//GEN-LAST:event_jCheckBox1ActionPerformed
-    
+
+    private void formWindowOpened(WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        this.pbHnd_pbar1 = new pbHandler(this.getJProgressBar1());
+    }//GEN-LAST:event_formWindowOpened
+    public Object getJProgressBar1() {
+        return this.jProgressBar1;
+    }
+    public Object getJProgressBar2() {
+        return this.jProgressBar2;
+    }
     private void updateComboBoxEvent() {
         if (jComboBox1.isEnabled() && jComboBox1.getSelectedIndex() > 0) {
             int SelectedRow = jTable1.getSelectedRow();
@@ -491,7 +440,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             int ComboValue = Integer.parseInt(ComboCaption[1].trim());
             if (!DownloadQue.contains(ComboCaption[0].trim().toLowerCase())) {
                 jTable1.setValueAt(ComboValue, SelectedRow, 1);
-                System.out.println("updateComboBoxEvent");
                 getAllLinksByHoster(ComboCaption[0]);
             }
         }
@@ -507,7 +455,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private List<String> EpisodeListWithHoster;
     private String userAgent = "Mozilla/5.0 Chrome/26.0.1410.64 Safari/537.31";
     private List<String> MovieLinks;
-    private List<String> getLinksFromPage(String URL, String SearchString) throws IOException {
+    public List<String> getLinksFromPage(String URL, String SearchString) throws IOException {
         List<String> SearchResults = new ArrayList<String>();
         Document doc = Jsoup.connect(URL)
                 .followRedirects(true)
@@ -520,18 +468,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             SearchResults.add(Link.attr("abs:href"));
         }
         return SearchResults;
-    }
-    private String getFrameFromPage(String URL, String SearchString) throws IOException {
-        String res = "";
-        Document doc = Jsoup.connect(URL)
-                .followRedirects(true)
-                .ignoreHttpErrors(true)
-                .timeout(30000)
-                .userAgent(userAgent)
-                .get();
-        Element result = doc.select(SearchString).first();
-        res = result.absUrl("src");        
-        return res;
     }
     private boolean SupportedHosterByURL(String URL) {
         String[] SplittedURL = URL.split("/");
@@ -654,7 +590,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private void loadHosters() {
         hosters = new ArrayList<String>();
         try {
-            System.out.println(youtubeDlBinary);
             Process p = new ProcessBuilder(
             youtubeDlBinary, "--list-extractors").start();
             InputStream is = p.getInputStream();
@@ -850,4 +785,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private JTable jTable1;
     private JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
+    private pbHandler pbHnd_pbar1;
+    private bsDownProc DownloadProcess;
 }
