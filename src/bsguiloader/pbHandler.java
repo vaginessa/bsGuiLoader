@@ -41,7 +41,6 @@ public class pbHandler extends Thread {
     }
     public void setValue(int Value) {
         this.progBar.setValue(Value);
-        System.out.println("Durchlauf");
     }
     
     //public void run() {

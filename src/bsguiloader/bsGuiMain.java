@@ -320,21 +320,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         return returnString;
     }
     private boolean queryYouTube(String URL, String FileDir, String Serie) {
-        this.DownloadProcess = new bsDownProc(
-                //pbuilder_arguments, 
-                this.getJProgressBar2(), 
-                youtubeDlBinary, 
-                URL, 
-                FileDir, 
-                Serie,
-                DownloadManagerPath,
-                FileNameMask
-        );
-        DownloadProcess.start();
 
-        while (DownloadProcess.isAlive()) {
-            repaint();
-        }
         return true;
     }
     public String youtubeDlBinary="";
@@ -384,24 +370,43 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             e.printStackTrace();
         }
         pbHnd_pbar1.setValue(0);
-        for (int i = 0; i < DownloadQue.size(); i++) {
-            //System.out.println(DownloadQue.get(i));
-            try {
-                this.pbHnd_pbar1.setValue(i);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            //jProgressBar1.setValue(i);
-            //jProgressBar1.paint(jProgressBar1.getGraphics());
+        final List<String> dq = DownloadQue;
+        final String fd = FileDir;
+        jButton2.setEnabled(false);
+        Thread thread = new Thread() {
+            public void run() {
+                for (int i = 0; i < dq.size(); i++) {
+                    try {
+                        pbHnd_pbar1.setValue(i);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    final String URL = dq.get(i);
+                    DownloadProcess = new bsDownProc(
+                            //pbuilder_arguments, 
+                            getJProgressBar2(), 
+                            youtubeDlBinary, 
+                            URL, 
+                            fd, 
+                            jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString(),
+                            DownloadManagerPath,
+                            FileNameMask
+                    );
+                    DownloadProcess.start();
 
-            queryYouTube(DownloadQue.get(i), FileDir, jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString());
-        }  
+                    while (DownloadProcess.isAlive()) {
+                        repaint();
+                    }
+                }
+                jButton2.setEnabled(true);
         try {
-            this.pbHnd_pbar1.cmd(false);
+            pbHnd_pbar1.cmd(false);
         } catch (Exception e) {
             e.printStackTrace();
         }        
-
+            }
+        };
+        thread.start();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jCheckBox1ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
