@@ -12,27 +12,13 @@ package bsguiloader;
  */
 public class pbHandler extends Thread {
     // Variablen
-    private boolean life;
-    private boolean order;
-    private int prog;
-    private int Value;
     private javax.swing.JProgressBar progBar;
     
     // Constructor
     public pbHandler(Object in) {
         this.progBar = (javax.swing.JProgressBar) in;
-        this.life = true;
-        this.prog = 0;
-        this.Value = 0;
     }
-    
-    // Methods
-    public void kill() {
-        this.life = false;
-    }
-    public void cmd(boolean in) {
-        this.order = in;
-    }
+    // Methoden
     public void setMinimum(int Val) {
         this.progBar.setMinimum(Val);
     }
@@ -42,28 +28,4 @@ public class pbHandler extends Thread {
     public void setValue(int Value) {
         this.progBar.setValue(Value);
     }
-    
-    //public void run() {
-        /*while (life) {
-            if (order) {
-                System.out.println("Thread läuft: " + this.prog);
-                this.prog++;
-                this.progBar.setValue(this.prog);
-                try {
-                    Thread.sleep(125);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (this.prog == this.progBar.getMaximum()) {
-                    life = false;
-                    System.out.println("Thread beendet.");
-                }
-            }
-        }*/
-        /*while (life) {
-            if (order) {
-                System.out.println("Thread läuft: " + this.progBar.getValue());
-            }
-        }*/
-    //}
 }

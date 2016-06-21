@@ -261,7 +261,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
     }//GEN-LAST:event_jButton1ActionPerformed
     private void doTableEvent() {
-        jButton2.setEnabled(false);
         jComboBox1.setEnabled(false);
         int SelectedRow = jTable1.getSelectedRow();
         if (SelectedRow > -1 && SelectedRow < jTable1.getRowCount()) {
@@ -280,7 +279,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 jTable1.setValueAt(MoviesAvailable, SelectedRow, 2);
                 ListSelectionModel selectionModel = jTable1.getSelectionModel();
                 selectionModel.setSelectionInterval(SelectedRow, SelectedRow);
-                jButton2.setEnabled(true);
                 jComboBox1.setEnabled(true);
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -331,6 +329,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
         return Input;
     }
+    private boolean isDownloading = false;
     private void jButton2ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
@@ -364,17 +363,13 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        try {
-            this.pbHnd_pbar1.cmd(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         pbHnd_pbar1.setValue(0);
         final List<String> dq = DownloadQue;
         final String fd = FileDir;
         jButton2.setEnabled(false);
         Thread thread = new Thread() {
             public void run() {
+                isDownloading = true;
                 for (int i = 0; i < dq.size(); i++) {
                     try {
                         pbHnd_pbar1.setValue(i);
@@ -399,11 +394,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     }
                 }
                 jButton2.setEnabled(true);
-        try {
-            pbHnd_pbar1.cmd(false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }        
+                isDownloading = false; 
             }
         };
         thread.start();
@@ -437,7 +428,8 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         return this.jProgressBar2;
     }
     private void updateComboBoxEvent() {
-        if (jComboBox1.isEnabled() && jComboBox1.getSelectedIndex() > 0) {
+        jButton2.setEnabled(false);
+        if (jComboBox1.isEnabled() && jComboBox1.getSelectedIndex() > 0 && (!isDownloading)) {
             int SelectedRow = jTable1.getSelectedRow();
             int CellValue = Integer.parseInt(jTable1.getModel()
                     .getValueAt(jTable1.convertRowIndexToModel(SelectedRow), 1).toString());
