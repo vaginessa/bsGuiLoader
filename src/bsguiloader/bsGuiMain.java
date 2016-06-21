@@ -439,6 +439,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 jTable1.setValueAt(ComboValue, SelectedRow, 1);
                 getAllLinksByHoster(ComboCaption[0]);
             }
+            jButton2.setEnabled(true);
         }
     }
     public void itemStateChanged(ItemEvent e) {
