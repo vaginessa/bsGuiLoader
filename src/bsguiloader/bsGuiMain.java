@@ -374,7 +374,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
     private void formWindowOpened(WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-        this.pbHnd_pbar1 = new pbHandler(this.getJProgressBar1());
+        //this.pbHnd_pbar1 = new pbHandler(this.getJProgressBar1());
     }//GEN-LAST:event_formWindowOpened
     public Object getJProgressBar1() {
         return this.jProgressBar1;
@@ -738,6 +738,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private JTable jTable1;
     private JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
-    private pbHandler pbHnd_pbar1;
+    //private pbHandler pbHnd_pbar1;
     private bsDownProc DownloadProcess;
 }
