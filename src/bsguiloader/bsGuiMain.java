@@ -289,17 +289,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         doTableEvent();
     }//GEN-LAST:event_jTable1MousePressed
 
-    /*private boolean checkIfNumber(String InputString) {
-        if (InputString.length() > 0) {
-            if (InputString.substring(
-                    0, 
-                    InputString.length()-1
-            ).matches("[-+]?\\d*\\.?\\d+")) {
-                return true;
-            }
-        }
-        return false;
-    }*/
     private String replaceStringByParams(String[] episodeVariables) {
         String resultStr = FileNameMask;
         for (String toReplaceString: episodeVariables)
@@ -316,10 +305,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 returnString = "0";
         } 
         return returnString;
-    }
-    private boolean queryYouTube(String URL, String FileDir, String Serie) {
-
-        return true;
     }
     public String youtubeDlBinary="";
     private String correctify(String Input) {
