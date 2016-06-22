@@ -23,8 +23,9 @@ import org.jsoup.select.Elements;
 public class bsDownProc extends Thread {
     // Variablen
     private List<String> ProcessArgument;
-    pbHandler pbHnd_pbar;
-    private String URL;
+    private List<String> DownloadQue;
+    pbHandler pbHnd_pbar1;
+    pbHandler pbHnd_pbar2;
     private String youtubeDlBinary;
     private String FileDir;
     private String SerieName;
@@ -34,22 +35,24 @@ public class bsDownProc extends Thread {
     // Konstruktor
     public bsDownProc(
             //List<String> ProcessArgument, 
-            Object pbar, 
+            List<String> DownloadQue,
+            Object pbar1,
+            Object pbar2,
             String youtubeDlBinary, 
-            String URL, 
             String FileDir, 
             String SerieName,
             String DownloadManagerPath,
             String FileManagerMask
     ) {
         this.ProcessArgument = ProcessArgument;
-        pbHnd_pbar = new pbHandler(pbar);
+        pbHnd_pbar1 = new pbHandler(pbar1);
+        pbHnd_pbar2 = new pbHandler(pbar2);
         this.youtubeDlBinary = youtubeDlBinary;
-        this.URL = URL;
         this.FileDir = FileDir;
         this.SerieName = SerieName;
         this.DownloadManagerPath = DownloadManagerPath;
         this.FileManagerMask = FileManagerMask;
+        this.DownloadQue = DownloadQue;
     }
     
     // Methoden
@@ -109,6 +112,15 @@ public class bsDownProc extends Thread {
         return SearchResults;
     }
     public void run() {
+        pbHnd_pbar1.setMinimum(0);
+        pbHnd_pbar1.setMaximum(DownloadQue.size());
+        for (int i = 0; i < DownloadQue.size(); i++) {
+            String URL = DownloadQue.get(i);
+            doDownload(URL);
+            pbHnd_pbar1.setValue(i+1);
+        }
+    }
+    private void doDownload(String URL) {
         try {
             int episodeNr;
             String[] episodeURLsplittedBySlash = URL.split("/");
@@ -169,8 +181,8 @@ public class bsDownProc extends Thread {
                 System.out.println(line);
                 String[] ProgramOutput = line.split(" ");
 
-                pbHnd_pbar.setMinimum(0);
-                pbHnd_pbar.setMaximum(1000);
+                pbHnd_pbar2.setMinimum(0);
+                pbHnd_pbar2.setMaximum(1000);
                 String ProgressStatus="";
                 for (int i = 1; i < ProgramOutput.length; i++) {
                     ProgressStatus += ProgramOutput[i];
@@ -198,7 +210,7 @@ public class bsDownProc extends Thread {
                                         )
                                     ) * 10.0f
                                 );
-                            pbHnd_pbar.setValue(value);
+                            pbHnd_pbar2.setValue(value);
                         }
                     }
                 }

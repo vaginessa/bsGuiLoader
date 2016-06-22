@@ -339,6 +339,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         
         int returnValue = chooser.showOpenDialog(null);
         String FileDir="";
+        jButton2.setEnabled(false);
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             System.out.println("Wechsle Ordner " + chooser.getSelectedFile().toString());
             FileDir = chooser.getSelectedFile().toString();
@@ -353,51 +354,20 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             se.printStackTrace();
         }
         System.setProperty("user.dir", FileDir);
-        int MaxNumber = DownloadQue.size();/*Integer.parseInt(
-                jTable1.getValueAt(jTable1.getSelectedRow(), 1).toString()
-        );*/
-        try {
-            this.pbHnd_pbar1.start();
-            pbHnd_pbar1.setMinimum(0);
-            pbHnd_pbar1.setMaximum(MaxNumber);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        pbHnd_pbar1.setValue(0);
         final List<String> dq = DownloadQue;
         final String fd = FileDir;
-        jButton2.setEnabled(false);
-        Thread thread = new Thread() {
-            public void run() {
-                isDownloading = true;
-                for (int i = 0; i < dq.size(); i++) {
-                    try {
-                        pbHnd_pbar1.setValue(i);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    final String URL = dq.get(i);
-                    DownloadProcess = new bsDownProc(
-                            //pbuilder_arguments, 
-                            getJProgressBar2(), 
-                            youtubeDlBinary, 
-                            URL, 
-                            fd, 
-                            jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString(),
-                            DownloadManagerPath,
-                            FileNameMask
-                    );
-                    DownloadProcess.start();
-
-                    while (DownloadProcess.isAlive()) {
-                        repaint();
-                    }
-                }
-                jButton2.setEnabled(true);
-                isDownloading = false; 
-            }
-        };
-        thread.start();
+        DownloadProcess = new bsDownProc(
+                dq,
+                getJProgressBar1(),
+                getJProgressBar2(),
+                youtubeDlBinary,
+                fd,
+                jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString(),
+                DownloadManagerPath,
+                FileNameMask
+        );
+        DownloadProcess.start();
+        isDownloading = false;
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jCheckBox1ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
