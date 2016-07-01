@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.concurrent.Task;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 /**
@@ -316,6 +317,10 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     }
     private boolean isDownloading = false;
     private void jButton2ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        if (jButton2.isEnabled()) {
+            JDialog bsDownloadQue = new bsGuiDownloadQue(this, true);
+            new bsGuiDownloadQue(this, true).setVisible(true);
+        } else {
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setDialogTitle("Verzeichnis zum Herunterladen auswählen...");
@@ -353,6 +358,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         );
         DownloadProcess.start();
         isDownloading = false;
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jCheckBox1ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
@@ -444,7 +450,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
         return NumberOfSearchResults;
     }
-    private List<String> DownloadQue = new ArrayList<String>();
+    public List<String> DownloadQue = new ArrayList<String>();
     private void updateHosterComboBox() {
         jComboBox1.removeAllItems();
         jComboBox1.addItem("");
