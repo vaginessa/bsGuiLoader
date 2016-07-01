@@ -319,6 +319,9 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private void jButton2ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         if (jButton2.isEnabled()) {
             JDialog bsDownloadQue = new bsGuiDownloadQue(this, true);
+            for (int i = 0; i < 5; i++) {
+                new bsGuiDownloadQue(this, true).addDownloadFromQue(DownloadQue.get(i));
+            }
             new bsGuiDownloadQue(this, true).setVisible(true);
         } else {
         JFileChooser chooser = new JFileChooser();

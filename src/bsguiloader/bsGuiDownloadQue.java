@@ -43,7 +43,7 @@ public class bsGuiDownloadQue extends javax.swing.JDialog {
 
             },
             new String [] {
-                "Title", "Progress"
+                "Title", "Progress", "Serie", "URL"
             }
         ));
         jScrollPane1.setViewportView(jTable1);
@@ -80,7 +80,11 @@ public class bsGuiDownloadQue extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
+    public void addDownloadFromQue(String URL) {
+        String[] URLelements = URL.split("/");
+        System.out.println("bla");
+        jTable1.
+    }
     /**
      * @param args the command line arguments
      */
