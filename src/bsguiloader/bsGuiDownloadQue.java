@@ -5,6 +5,18 @@
  */
 package bsguiloader;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JProgressBar;
+import javax.swing.JTable;
+import javax.swing.Timer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
+
 /**
  *
  * @author administrator
@@ -17,8 +29,35 @@ public class bsGuiDownloadQue extends javax.swing.JDialog {
     public bsGuiDownloadQue(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        
     }
+    public void importDownloadQue(List<String> dq) {
+        bsDownloadQue = dq;
+        addDownloadsFromQue();
+    }
+    private List<String> bsDownloadQue;
 
+    private  class ProgressCellRenderer implements TableCellRenderer {
+
+        JProgressBar bar = new JProgressBar();
+
+        public ProgressCellRenderer() {
+            bar.setIndeterminate(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+            Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            return bar;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            TableModel model = jTable1.getModel();
+            for (int row = 0; row < model.getRowCount(); row++) {
+                jTable1.getModel().setValueAt(0, row, 0);
+            }
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -43,17 +82,34 @@ public class bsGuiDownloadQue extends javax.swing.JDialog {
 
             },
             new String [] {
-                "Title", "Progress", "Serie", "URL"
+                "Serie", "Title", "Progress"
             }
-        ));
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.String.class, java.lang.Object.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(jTable1);
 
         jButton1.setText("Download starten");
         jButton1.setEnabled(false);
 
         jButton2.setText("v");
+        jButton2.setEnabled(false);
 
         jButton3.setText("^");
+        jButton3.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -80,10 +136,14 @@ public class bsGuiDownloadQue extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    public void addDownloadFromQue(String URL) {
-        String[] URLelements = URL.split("/");
-        System.out.println("bla");
-        jTable1.
+    public void addDownloadsFromQue() {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        jTable1.getColumn("Progress").setCellRenderer(new ProgressCellRenderer());
+        for (String URL: bsDownloadQue) {
+            String[] URLelements = URL.split("/");
+            System.out.println(URLelements[0] + " " + URLelements[1] + " " + URLelements[6]);
+            //model.addRow(URLelements);
+        }
     }
     /**
      * @param args the command line arguments
@@ -119,7 +179,8 @@ public class bsGuiDownloadQue extends javax.swing.JDialog {
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
+                        //System.exit(0);
+                        dialog.dispose();
                     }
                 });
                 dialog.setVisible(true);

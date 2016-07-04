@@ -22,10 +22,11 @@ import org.jsoup.select.Elements;
  */
 public class bsDownProc extends Thread {
     // Variablen
-    private List<String> ProcessArgument;
+//    private List<String> ProcessArgument;
     private List<String> DownloadQue;
     pbHandler pbHnd_pbar1;
     pbHandler pbHnd_pbar2;
+    private javax.swing.JButton jBtn2;
     private String youtubeDlBinary;
     private String FileDir;
     private String SerieName;
@@ -38,13 +39,14 @@ public class bsDownProc extends Thread {
             List<String> DownloadQue,
             Object pbar1,
             Object pbar2,
+            Object jBtn2,
             String youtubeDlBinary, 
             String FileDir, 
             String SerieName,
             String DownloadManagerPath,
             String FileManagerMask
     ) {
-        this.ProcessArgument = ProcessArgument;
+//        this.ProcessArgument = ProcessArgument;
         pbHnd_pbar1 = new pbHandler(pbar1);
         pbHnd_pbar2 = new pbHandler(pbar2);
         this.youtubeDlBinary = youtubeDlBinary;
@@ -53,9 +55,13 @@ public class bsDownProc extends Thread {
         this.DownloadManagerPath = DownloadManagerPath;
         this.FileManagerMask = FileManagerMask;
         this.DownloadQue = DownloadQue;
+        this.jBtn2 = (javax.swing.JButton) jBtn2;
     }
     
     // Methoden
+    public void setText(String text) {
+        jBtn2.setText(text);
+    }
     private boolean checkIfNumber(String InputString) {
         if (InputString.length() > 0) {
             if (InputString.substring(
@@ -84,7 +90,7 @@ public class bsDownProc extends Thread {
         } 
         return returnString;
     }
-    private String userAgent = "Mozilla/5.0 Chrome/26.0.1410.64 Safari/537.31";
+    private final String userAgent = "Mozilla/5.0 Chrome/26.0.1410.64 Safari/537.31";
     private String getFrameFromPage(String URL, String SearchString) throws IOException {
         String res = "";
         Document doc = Jsoup.connect(URL)
@@ -114,11 +120,13 @@ public class bsDownProc extends Thread {
     public void run() {
         pbHnd_pbar1.setMinimum(0);
         pbHnd_pbar1.setMaximum(DownloadQue.size());
+        setText("Download abbrechen");
         for (int i = 0; i < DownloadQue.size(); i++) {
             String URL = DownloadQue.get(i);
             doDownload(URL);
             pbHnd_pbar1.setValue(i+1);
         }
+        setText("Download starten");
     }
     private void doDownload(String URL) {
         try {

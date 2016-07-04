@@ -108,11 +108,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
-        addWindowListener(new WindowAdapter() {
-            public void windowOpened(WindowEvent evt) {
-                formWindowOpened(evt);
-            }
-        });
 
         jLabel1.setText("Serie:");
         jLabel1.setName("jLabel1"); // NOI18N
@@ -315,52 +310,50 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
         return Input;
     }
-    private boolean isDownloading = false;
     private void jButton2ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        if (jButton2.isEnabled()) {
-            JDialog bsDownloadQue = new bsGuiDownloadQue(this, true);
-            for (int i = 0; i < 5; i++) {
-                new bsGuiDownloadQue(this, true).addDownloadFromQue(DownloadQue.get(i));
+//        bsGuiDownloadQue bsDownloadQue = new bsGuiDownloadQue(this, true);
+//        bsDownloadQue.importDownloadQue(DownloadQue);
+//        bsDownloadQue.setVisible(true);
+        if (jButton2.getText().contains("starten")) {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setCurrentDirectory(new java.io.File("."));
+            chooser.setDialogTitle("Verzeichnis zum Herunterladen auswählen...");
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setAcceptAllFileFilterUsed(false);
+
+            int returnValue = chooser.showOpenDialog(null);
+            String FileDir="";
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                System.out.println("Wechsle Ordner " + chooser.getSelectedFile().toString());
+                FileDir = chooser.getSelectedFile().toString();
+            } else {
+                FileDir = "Downloads";
             }
-            new bsGuiDownloadQue(this, true).setVisible(true);
+            FileDir += File.separator + correctify(jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString());
+            File DownDir = new File(FileDir);
+            try {
+                DownDir.mkdir();
+            } catch (SecurityException se) {
+                se.printStackTrace();
+            }
+            System.setProperty("user.dir", FileDir);
+            final List<String> dq = DownloadQue;
+            final String fd = FileDir;
+            DownloadProcess = new bsDownProc(
+                    dq,
+                    getJProgressBar1(),
+                    getJProgressBar2(),
+                    getJButton2(),
+                    youtubeDlBinary,
+                    fd,
+                    jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString(),
+                    DownloadManagerPath,
+                    FileNameMask
+            );
+            DownloadProcess.start();
         } else {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new java.io.File("."));
-        chooser.setDialogTitle("Verzeichnis zum Herunterladen auswählen...");
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-        
-        int returnValue = chooser.showOpenDialog(null);
-        String FileDir="";
-        jButton2.setEnabled(false);
-        if (returnValue == JFileChooser.APPROVE_OPTION) {
-            System.out.println("Wechsle Ordner " + chooser.getSelectedFile().toString());
-            FileDir = chooser.getSelectedFile().toString();
-        } else {
-            FileDir = "Downloads";
-        }
-        FileDir += File.separator + correctify(jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString());
-        File DownDir = new File(FileDir);
-        try {
-            DownDir.mkdir();
-        } catch (SecurityException se) {
-            se.printStackTrace();
-        }
-        System.setProperty("user.dir", FileDir);
-        final List<String> dq = DownloadQue;
-        final String fd = FileDir;
-        DownloadProcess = new bsDownProc(
-                dq,
-                getJProgressBar1(),
-                getJProgressBar2(),
-                youtubeDlBinary,
-                fd,
-                jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString(),
-                DownloadManagerPath,
-                FileNameMask
-        );
-        DownloadProcess.start();
-        isDownloading = false;
+            DownloadProcess.setText("Download starten");
+            DownloadProcess.stop();
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -381,19 +374,18 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }
         }
     }//GEN-LAST:event_jCheckBox1ActionPerformed
-
-    private void formWindowOpened(WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-        //this.pbHnd_pbar1 = new pbHandler(this.getJProgressBar1());
-    }//GEN-LAST:event_formWindowOpened
     public Object getJProgressBar1() {
         return this.jProgressBar1;
     }
     public Object getJProgressBar2() {
         return this.jProgressBar2;
     }
+    public Object getJButton2() {
+        return this.jButton2;
+    }
     private void updateComboBoxEvent() {
         jButton2.setEnabled(false);
-        if (jComboBox1.isEnabled() && jComboBox1.getSelectedIndex() > 0 && (!isDownloading)) {
+        if (jComboBox1.isEnabled() && jComboBox1.getSelectedIndex() > 0 && !jButton2.getText().contains("abbrechen")) {
             int SelectedRow = jTable1.getSelectedRow();
             int CellValue = Integer.parseInt(jTable1.getModel()
                     .getValueAt(jTable1.convertRowIndexToModel(SelectedRow), 1).toString());
@@ -691,14 +683,15 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 }
             }
         }
-        /* Set the Nimbus look and feel */
+        /* Set the look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if (Design.contains(info.getName())) {
+                //if (Design.toLowerCase().contains(info.getName().toLowerCase())) {
+                if (info.getName().toLowerCase().contains(Design.toLowerCase())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
