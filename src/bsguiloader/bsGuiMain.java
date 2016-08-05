@@ -158,8 +158,14 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         });
         jScrollPane1.setViewportView(jTable1);
 
+        jCheckBox1.setEnabled(false);
         jCheckBox1.setLabel("Filme herunterladen");
         jCheckBox1.setName("checkMovies"); // NOI18N
+        jCheckBox1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("Download starten");
         jButton2.setEnabled(false);
@@ -258,6 +264,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     }//GEN-LAST:event_jButton1ActionPerformed
     private void doTableEvent() {
         jComboBox1.setEnabled(false);
+        jCheckBox1.setEnabled(false);
         int SelectedRow = jTable1.getSelectedRow();
         if (SelectedRow > -1 && SelectedRow < jTable1.getRowCount()) {
             try {
@@ -276,6 +283,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 ListSelectionModel selectionModel = jTable1.getSelectionModel();
                 selectionModel.setSelectionInterval(SelectedRow, SelectedRow);
                 jComboBox1.setEnabled(true);
+                jCheckBox1.setEnabled(true);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -338,6 +346,9 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }
             System.setProperty("user.dir", FileDir);
             final List<String> dq = DownloadQue;
+            for (String Link: DownloadQue) {
+                System.out.println("DownloadQue: " + Link);
+            }
             final String fd = FileDir;
             DownloadProcess = new bsDownProc(
                     dq,
@@ -436,7 +447,12 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private int getAllLinksByHoster(String hoster) {
         DownloadQue.clear();
         int NumberOfSearchResults = 0;
-        for (String EpisodeURL: EpisodeListWithHoster) {
+        List<String> TempList = new ArrayList<String>();
+        TempList.addAll(EpisodeListWithHoster);
+        if (jCheckBox1.isSelected()) {
+            TempList.addAll(MovieLinks);
+        }
+        for (String EpisodeURL: TempList) {
             String EpisodeURLLowerCase = EpisodeURL.toLowerCase();
             if (EpisodeURLLowerCase.contains(hoster.toLowerCase())) {
                 NumberOfSearchResults++;
@@ -450,7 +466,12 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jComboBox1.removeAllItems();
         jComboBox1.addItem("");
         List<String> HostersAdded = new ArrayList<String>();
-        for (String SupportedHosterFromList: EpisodeListWithHoster) {
+        List<String> TempEpisodeList = new ArrayList<String>();
+        TempEpisodeList.addAll(EpisodeListWithHoster);
+        if (jCheckBox1.isSelected()) {
+            TempEpisodeList.addAll(MovieLinks);
+        }
+        for (String SupportedHosterFromList: TempEpisodeList) {
             String[] SplittedLink = SupportedHosterFromList.split("/");
             String[] SplittedHoster = SplittedLink[SplittedLink.length-1].split("-");
             String HosterCore = SplittedHoster[0];
@@ -485,15 +506,14 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             TempEpisodes = getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a");
             EpisodeListWithHoster.addAll(TempEpisodes);
         }
-        Elements Movies = doc.select("section.serie ul.pages li.button a");
+        Elements Movies = doc.select("ul.pages li.button a");
         if (Movies.size() > 0 && Movies.get(0).text().contains("Film")) {
-            for (String Movie: getLinksFromPage(Movies.get(0).attr("abs:href"), "div#sp_left table tbody tr td a")) {
-                if (SupportedHosterByURL(Movie)) {
-                    MovieLinks.add(Movie);
-                }
-            }
+            List<String> TempMovies = new ArrayList<String>();
+            TempMovies = getLinksFromPage(Movies.get(0).attr("abs:href"), "div#sp_left table tbody tr td a");
+            MovieLinks.addAll(TempMovies);
         }
         updateHosterComboBox();
+        if (jCheckBox1.isSelected()) { return EpisodeListWithHoster.size() + MovieLinks.size(); }
         return EpisodeListWithHoster.size();
     }
     private void addSeries()  {
@@ -673,7 +693,14 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
      * @param args
      */
     public static void main(String args[]) {
-        String Design = "Nimbus";
+        String Design;
+        boolean useDesign = false;
+        if (System.getProperty("os.name").contains("Linux")) {
+            Design = "GTK";
+        } else if (System.getProperty("os.name").contains("Windows")) {
+            Design = "Windows";
+        } else { Design = "Nimbus"; }
+        //String Design = "Nimbus";
         if (args.length > 0) {
             switch (args[0].toLowerCase()) {
                 case "--design":
@@ -693,6 +720,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 //if (Design.toLowerCase().contains(info.getName().toLowerCase())) {
                 if (info.getName().toLowerCase().contains(Design.toLowerCase())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    useDesign = true;
                     break;
                 }
             }
