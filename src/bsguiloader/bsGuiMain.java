@@ -7,8 +7,10 @@ package bsguiloader;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -42,6 +44,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import javax.swing.ImageIcon;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
 /**
  *
  * @author David Bitterlich
@@ -88,6 +94,12 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jProgressBar1 = new JProgressBar();
         jLabel4 = new JLabel();
         jProgressBar2 = new JProgressBar();
+        jMenuBar1 = new JMenuBar();
+        jMenu1 = new JMenu();
+        jMenuItem2 = new JMenuItem();
+        jMenuItem3 = new JMenuItem();
+        jMenu2 = new JMenu();
+        jMenuItem1 = new JMenuItem();
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setName("Form"); // NOI18N
@@ -177,6 +189,49 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jProgressBar2.setName("jProgressBar2"); // NOI18N
         jProgressBar2.setStringPainted(true);
 
+        jMenuBar1.setName("jMenuBar1"); // NOI18N
+
+        jMenu1.setLabel("Datei");
+        jMenu1.setName("jMenu1"); // NOI18N
+
+        jMenuItem2.setEnabled(false);
+        jMenuItem2.setLabel("Einstellungen (noch nicht bereit)");
+        jMenuItem2.setName("jMenuItem2"); // NOI18N
+        jMenuItem2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem2);
+
+        jMenuItem3.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_MASK));
+        jMenuItem3.setLabel("Beenden");
+        jMenuItem3.setName("Beenden"); // NOI18N
+        jMenuItem3.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem3);
+
+        jMenuBar1.add(jMenu1);
+
+        jMenu2.setLabel("Hilfe");
+        jMenu2.setName("jMenu2"); // NOI18N
+
+        jMenuItem1.setLabel("Über");
+        jMenuItem1.setName("jMenuItem1"); // NOI18N
+        jMenuItem1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem1);
+
+        jMenuBar1.add(jMenu2);
+
+        setJMenuBar(jMenuBar1);
+
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -216,7 +271,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     .addComponent(jTextField1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(jCheckBox1)
@@ -368,6 +423,19 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }
         }
     }//GEN-LAST:event_jCheckBox1ActionPerformed
+    // Menüeintrag Beenden
+    private void jMenuItem3ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+    // Menüeintrag Einstellungen
+    private void jMenuItem2ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+    // Menüeintrag Über
+    private void jMenuItem1ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        bsAbout aboutWindow = new bsAbout(this, true);
+        aboutWindow.setVisible(true);
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
     public Object getJProgressBar1() {
         return this.jProgressBar1;
     }
@@ -745,6 +813,12 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private JLabel jLabel2;
     private JLabel jLabel3;
     private JLabel jLabel4;
+    private JMenu jMenu1;
+    private JMenu jMenu2;
+    private JMenuBar jMenuBar1;
+    private JMenuItem jMenuItem1;
+    private JMenuItem jMenuItem2;
+    private JMenuItem jMenuItem3;
     private JProgressBar jProgressBar1;
     private JProgressBar jProgressBar2;
     private JScrollPane jScrollPane1;
