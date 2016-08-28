@@ -58,6 +58,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
      * Creates new form bsGuiMain
      */
     private final TableRowSorter<TableModel> rowSorter;
+    private boolean debugMode = true;
     public bsGuiMain() {
         checkYouTubeDL();
         initComponents();
@@ -356,6 +357,11 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
         return Input;
     }
+    public void debugPrint(String msg) {
+        if (debugMode) {
+            System.out.println(msg);
+        }
+    }
     private void jButton2ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
 //        bsGuiDownloadQue bsDownloadQue = new bsGuiDownloadQue(this, true);
 //        bsDownloadQue.importDownloadQue(DownloadQue);
@@ -370,7 +376,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             int returnValue = chooser.showOpenDialog(null);
             String FileDir="";
             if (returnValue == JFileChooser.APPROVE_OPTION) {
-                System.out.println("Wechsle Ordner " + chooser.getSelectedFile().toString());
+                debugPrint("Wechsle Ordner " + chooser.getSelectedFile().toString());
                 FileDir = chooser.getSelectedFile().toString();
             } else {
                 FileDir = "Downloads";
@@ -385,7 +391,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             System.setProperty("user.dir", FileDir);
             final List<String> dq = DownloadQue;
             for (String Link: DownloadQue) {
-                System.out.println("DownloadQue: " + Link);
+                debugPrint("DownloadQue: " + Link);
             }
             final String fd = FileDir;
             DownloadProcess = new bsDownProc(
@@ -403,6 +409,14 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         } else {
             DownloadProcess.setText("Download starten");
             DownloadProcess.stop();
+            pbHandler pb1 = new pbHandler(getJProgressBar1());
+            pb1.setMinimum(0);
+            pb1.setMaximum(100);
+            pb1.setValue(0);
+            pbHandler pb2 = new pbHandler(getJProgressBar2());
+            pb2.setMinimum(0);
+            pb2.setMaximum(100);
+            pb2.setValue(0);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -692,7 +706,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     + File.separator
                     + "youtube-dl";
         }
-        System.out.println(DefaultPath);
+        debugPrint(DefaultPath);
         File DlPath = new File(DefaultPath);
         if (!DlPath.exists() || DlPath.isDirectory()) {
             System.err.println("YouTube-Dl Binary not found!");
