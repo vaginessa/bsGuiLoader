@@ -15,11 +15,16 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -48,6 +53,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 /**
  *
  * @author David Bitterlich
@@ -63,7 +69,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         checkYouTubeDL();
         initComponents();
                 
-        addSeries();
+        checkSeriesFile();
         jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jTable1.setRowSelectionAllowed(true);
         jTable1.setColumnSelectionAllowed(false);
@@ -95,6 +101,8 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jProgressBar1 = new JProgressBar();
         jLabel4 = new JLabel();
         jProgressBar2 = new JProgressBar();
+        jLabel5 = new JLabel();
+        jLabel6 = new JLabel();
         jMenuBar1 = new JMenuBar();
         jMenu1 = new JMenu();
         jMenuItem2 = new JMenuItem();
@@ -190,6 +198,13 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jProgressBar2.setName("jProgressBar2"); // NOI18N
         jProgressBar2.setStringPainted(true);
 
+        jLabel5.setHorizontalAlignment(SwingConstants.RIGHT);
+        jLabel5.setText("Aktuell:");
+        jLabel5.setName("jLabel5"); // NOI18N
+
+        jLabel6.setText("Kein Download");
+        jLabel6.setName("jLabel6"); // NOI18N
+
         jMenuBar1.setName("jMenuBar1"); // NOI18N
 
         jMenu1.setLabel("Datei");
@@ -255,13 +270,15 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jButton2, GroupLayout.PREFERRED_SIZE, 198, GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel3)
-                            .addComponent(jLabel4))
+                            .addComponent(jLabel4, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel5, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                             .addComponent(jProgressBar2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jProgressBar1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(jProgressBar1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel6, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -272,7 +289,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     .addComponent(jTextField1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton1))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(jCheckBox1)
@@ -284,10 +301,16 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     .addComponent(jLabel3)
                     .addComponent(jProgressBar1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel4)
-                    .addComponent(jProgressBar2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jProgressBar2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6)))))
         );
 
         pack();
@@ -399,6 +422,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     getJProgressBar1(),
                     getJProgressBar2(),
                     getJButton2(),
+                    getjLabel6(),
                     youtubeDlBinary,
                     fd,
                     jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString(),
@@ -458,6 +482,9 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     }
     public Object getJButton2() {
         return this.jButton2;
+    }
+    public Object getjLabel6() {
+        return this.jLabel6;
     }
     private void updateComboBoxEvent() {
         jButton2.setEnabled(false);
@@ -581,6 +608,52 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         if (jCheckBox1.isSelected()) { return EpisodeListWithHoster.size() + MovieLinks.size(); }
         return EpisodeListWithHoster.size();
     }
+    private void readFromSeriesFile() {
+        File f = new File("series.conf");
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(f));
+            String line = br.readLine();
+            System.out.println(line);
+            if (line == null) {
+                addSeries();
+            } else {
+                TableColumnModel tcm = jTable1.getColumnModel();
+                tcm.removeColumn(tcm.getColumn(3));
+                DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+                while (line != null) {
+                    String[] lines = line.split(";");
+                    if (!lines[0].isEmpty()) {
+                        model.addRow(new Object[]{
+                            lines[0], // Serientitel
+                            "", // Anzahl Serien
+                            false, // Filme verfügbar
+                            lines[1] // URL
+                        }); 
+                    }
+                    line = br.readLine();
+                }
+            }
+            br.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            addSeries();
+        }
+    }
+    private void checkSeriesFile() {
+        File f = new File("series.conf");
+        if (!f.exists() && !f.isDirectory()) {
+            addSeries();
+        } else {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+            String FileDate = sdf.format(f.lastModified());
+            String Today = sdf.format(new Date());
+            if (!FileDate.equals(Today)) {
+                addSeries();
+            } else {
+                readFromSeriesFile();
+            }
+        }
+    }
     private void addSeries()  {
         String url = "http://bs.to/andere-serien";
         try {
@@ -588,6 +661,12 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             int repeat=0;
             TableColumnModel tcm = jTable1.getColumnModel();
             tcm.removeColumn(tcm.getColumn(3));
+            File f = new File("series.conf");
+            // Seriendatei entfernen, sofern sie bereits existiert.
+            if (f.exists()) {
+                f.delete();
+            }
+            PrintWriter pw = new PrintWriter(new FileOutputStream("series.conf"));
             do {
                 Document doc = Jsoup.connect(url)
                     .followRedirects(true)
@@ -608,8 +687,10 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                                 false, // Filme verfügbar
                                 SeriesURL // URL
                             });
+                            pw.println(node.text() + ";" + SeriesURL);
                         }
                 }
+                pw.close();
                 if (series.isEmpty()) { 
                     System.err.println("Probleme beim Holen der Serien... wiederhole");
                     if (repeat > 150) {
@@ -827,6 +908,8 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private JLabel jLabel2;
     private JLabel jLabel3;
     private JLabel jLabel4;
+    private JLabel jLabel5;
+    private JLabel jLabel6;
     private JMenu jMenu1;
     private JMenu jMenu2;
     private JMenuBar jMenuBar1;

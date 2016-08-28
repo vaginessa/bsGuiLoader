@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JLabel;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -27,6 +28,7 @@ public class bsDownProc extends Thread {
     pbHandler pbHnd_pbar1;
     pbHandler pbHnd_pbar2;
     private javax.swing.JButton jBtn2;
+    private javax.swing.JLabel jLabel6;
     private String youtubeDlBinary;
     private String FileDir;
     private String SerieName;
@@ -40,6 +42,7 @@ public class bsDownProc extends Thread {
             Object pbar1,
             Object pbar2,
             Object jBtn2,
+            Object jLabel6,
             String youtubeDlBinary, 
             String FileDir, 
             String SerieName,
@@ -56,6 +59,7 @@ public class bsDownProc extends Thread {
         this.FileManagerMask = FileManagerMask;
         this.DownloadQue = DownloadQue;
         this.jBtn2 = (javax.swing.JButton) jBtn2;
+        this.jLabel6 = (JLabel) jLabel6;
     }
     
     // Methoden
@@ -173,6 +177,8 @@ public class bsDownProc extends Thread {
                 pbuilder_arguments.add("--external-downloader"); 
                 pbuilder_arguments.add(DownloadManagerPath);
             }
+            String tmpStr = replaceStringByParams(episodeVars);
+            jLabel6.setText(tmpStr.substring(0,tmpStr.length()-8));
             ProcessBuilder pbuilder = new ProcessBuilder(pbuilder_arguments);
             pbuilder.redirectErrorStream(true);
             Process p = pbuilder.start();
