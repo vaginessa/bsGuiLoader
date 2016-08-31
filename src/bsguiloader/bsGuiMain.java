@@ -593,20 +593,25 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 .userAgent(userAgent)
                 .get();
         Elements seasons = doc.select("ul.pages li:not(.button) a");
+        int episodes = 0;
         for (Element SeasonPage: seasons) {
             List<String> TempEpisodes = new ArrayList<String>();
             TempEpisodes = getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a");
+            
             EpisodeListWithHoster.addAll(TempEpisodes);
+            episodes = getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a strong").size();
+            System.out.println(TempEpisodes);
         }
         Elements Movies = doc.select("ul.pages li.button a");
         if (Movies.size() > 0 && Movies.get(0).text().contains("Film")) {
             List<String> TempMovies = new ArrayList<String>();
             TempMovies = getLinksFromPage(Movies.get(0).attr("abs:href"), "div#sp_left table tbody tr td a");
             MovieLinks.addAll(TempMovies);
+            episodes += getLinksFromPage(Movies.get(0).attr("abs:href"), "div#sp_left table tbody tr td a strong").size();
         }
         updateHosterComboBox();
         if (jCheckBox1.isSelected()) { return EpisodeListWithHoster.size() + MovieLinks.size(); }
-        return EpisodeListWithHoster.size();
+        return episodes;
     }
     private void readFromSeriesFile() {
         File f = new File("series.conf");
