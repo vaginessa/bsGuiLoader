@@ -65,6 +65,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
      */
     private final TableRowSorter<TableModel> rowSorter;
     private boolean debugMode = true;
+    private boolean preferePackagedDl = true;
     public bsGuiMain() {
         checkYouTubeDL();
         updateYouTubeDL();
@@ -571,16 +572,11 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             // Arbeite mit dem Hoster des Videos
             String HosterCore = SplittedHoster[0];
             if (!HosterCore.matches(".*\\d+.*")) {
-                if (hosters.contains(HosterCore.toLowerCase())) {
-                    System.out.println(HosterCore);
-                }
                 for (String HosterFromList: hosters) {
                     //System.out.println("Info: " + HosterFromList + " .... " + HosterCore + " :: " + HosterFromList.contains(HosterCore.toLowerCase()));
                     if (HosterFromList.toLowerCase().contains(HosterCore.toLowerCase())) {
-                        System.out.println("Durchlauf " + HostersAdded.contains(HosterCore.toLowerCase()) + " " + HosterCore);
                         // Check, ob Hoster bereits hinzugefügt
                         if (!HostersAdded.contains(HosterCore.toLowerCase())) {
-                            System.out.println("Wahr");
                             jComboBox1.addItem(
                                     HosterCore.toUpperCase() 
                                     + ": " 
@@ -613,7 +609,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
         Elements Movies = doc.select("ul.pages li.button a");
         if (Movies.size() > 0 && Movies.get(0).text().contains("Film")) {
-            System.out.println("Durchlauf");
             List<String> TempMovies = new ArrayList<String>();
             TempMovies = getLinksFromPage(Movies.get(0).attr("abs:href"), "div#sp_left table tbody tr td a");
             MovieLinks.addAll(TempMovies);
@@ -815,11 +810,14 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         
     }
     private void checkYouTubeDL() {
-        String DefaultPath = System.getProperty("user.dir") 
+        String DefaultPath = "";
+        if (preferePackagedDl || System.getProperty("os.name").contains("Windows")) {
+            DefaultPath = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParent().toString()
                 + File.separator
                 + "tools"
                 + File.separator;
-        if (System.getProperty("os.name").contains("Linux")) {
+        }
+        if (System.getProperty("os.name").contains("Linux") && !preferePackagedDl) {
             String TestPathString = "/usr/bin/youtube-dl";
             File TestPath = new File(TestPathString);
             if (TestPath.exists() && !TestPath.isDirectory()) {
