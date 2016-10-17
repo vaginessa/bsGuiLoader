@@ -566,19 +566,27 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         for (String SupportedHosterFromList: TempEpisodeList) {
             String[] SplittedLink = SupportedHosterFromList.split("/");
             String[] SplittedHoster = SplittedLink[SplittedLink.length-1].split("-");
+            // Arbeite mit dem Hoster des Videos
             String HosterCore = SplittedHoster[0];
-            
-            for (String HosterFromList: hosters) {
-                if (HosterFromList.contains(HosterCore.toLowerCase())) {
-                    // Check, ob Hoster bereits hinzugefügt
-                    if (!HostersAdded.contains(HosterCore.toLowerCase()) && !HosterCore.matches("^[0-9]+$")) {
-                        jComboBox1.addItem(
-                                HosterCore.toUpperCase() 
-                                + ": " 
-                                + getAllLinksByHoster(HosterCore)
-                        );
-                        HostersAdded.add(HosterCore.toLowerCase());
-                    }                
+            if (!HosterCore.matches(".*\\d+.*")) {
+                if (hosters.contains(HosterCore.toLowerCase())) {
+                    System.out.println(HosterCore);
+                }
+                for (String HosterFromList: hosters) {
+                    //System.out.println("Info: " + HosterFromList + " .... " + HosterCore + " :: " + HosterFromList.contains(HosterCore.toLowerCase()));
+                    if (HosterFromList.toLowerCase().contains(HosterCore.toLowerCase())) {
+                        System.out.println("Durchlauf " + HostersAdded.contains(HosterCore.toLowerCase()) + " " + HosterCore);
+                        // Check, ob Hoster bereits hinzugefügt
+                        if (!HostersAdded.contains(HosterCore.toLowerCase())) {
+                            System.out.println("Wahr");
+                            jComboBox1.addItem(
+                                    HosterCore.toUpperCase() 
+                                    + ": " 
+                                    + getAllLinksByHoster(HosterCore)
+                            );
+                            HostersAdded.add(HosterCore.toLowerCase());
+                        }                
+                    }
                 }
             }
         }
@@ -599,11 +607,11 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             TempEpisodes = getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a");
             
             EpisodeListWithHoster.addAll(TempEpisodes);
-            episodes = getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a strong").size();
-            System.out.println(TempEpisodes);
+            episodes += getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a strong").size();
         }
         Elements Movies = doc.select("ul.pages li.button a");
         if (Movies.size() > 0 && Movies.get(0).text().contains("Film")) {
+            System.out.println("Durchlauf");
             List<String> TempMovies = new ArrayList<String>();
             TempMovies = getLinksFromPage(Movies.get(0).attr("abs:href"), "div#sp_left table tbody tr td a");
             MovieLinks.addAll(TempMovies);
@@ -783,14 +791,22 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 + File.separator
                 + "tools"
                 + File.separator;
-        if (System.getProperty("os.name").contains("Windows")) {
-            DefaultPath += "youtube-dl-windows" 
-                    + File.separator 
-                    + "youtube-dl.exe";
+        if (System.getProperty("os.name").contains("Linux")) {
+            String TestPathString = "/usr/bin/youtube-dl";
+            File TestPath = new File(TestPathString);
+            if (TestPath.exists() && !TestPath.isDirectory()) {
+                DefaultPath = TestPathString;
+            }
         } else {
-            DefaultPath += "youtube-dl-linux"
-                    + File.separator
-                    + "youtube-dl";
+            if (System.getProperty("os.name").contains("Windows")) {
+                DefaultPath += "youtube-dl-windows" 
+                        + File.separator 
+                        + "youtube-dl.exe";
+            } else {
+                DefaultPath += "youtube-dl-linux"
+                        + File.separator
+                        + "youtube-dl";
+            }
         }
         debugPrint(DefaultPath);
         File DlPath = new File(DefaultPath);
