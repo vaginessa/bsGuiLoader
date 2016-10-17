@@ -67,6 +67,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     private boolean debugMode = true;
     public bsGuiMain() {
         checkYouTubeDL();
+        updateYouTubeDL();
         initComponents();
                 
         checkSeriesFile();
@@ -778,6 +779,32 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             */
             FileNameMask = "<name> S<season>E<episode> <title>.<ext>";
         }
+    }
+    private void updateYouTubeDL() {
+        try {
+            List<String> arguments = new ArrayList<String>();
+            arguments.add(youtubeDlBinary);
+            arguments.add("-U");
+            System.out.println("Check for Update of YouTubeDl");
+            ProcessBuilder pbuilder = new ProcessBuilder(arguments);
+            pbuilder.redirectErrorStream(true);
+            Process p = pbuilder.start();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+            String line;
+            while ((line = bre.readLine()) != null) {
+                System.err.println(line);
+            }
+            bre.close();
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+            System.out.println("Process finished.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
     }
     private void checkYouTubeDL() {
         String DefaultPath = System.getProperty("user.dir") 
