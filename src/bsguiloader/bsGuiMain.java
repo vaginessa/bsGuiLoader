@@ -441,6 +441,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             pb2.setMinimum(0);
             pb2.setMaximum(100);
             pb2.setValue(0);
+            jLabel6.setText("Kein Download");
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -600,7 +601,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             
             EpisodeListWithHoster.addAll(TempEpisodes);
             episodes = getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a strong").size();
-            System.out.println(TempEpisodes);
+            //System.out.println(TempEpisodes);
         }
         Elements Movies = doc.select("ul.pages li.button a");
         if (Movies.size() > 0 && Movies.get(0).text().contains("Film")) {
@@ -618,7 +619,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         try {
             BufferedReader br = new BufferedReader(new FileReader(f));
             String line = br.readLine();
-            System.out.println(line);
+            //System.out.println(line);
             if (line == null) {
                 addSeries();
             } else {
