@@ -5,6 +5,7 @@
  */
 package bsguiloader;
 import java.awt.Cursor;
+import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,23 +56,27 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import java.sql.SQLException;
+import org.tmatesoft.sqljet.core.SqlJetTransactionMode;
+import org.tmatesoft.sqljet.core.table.SqlJetDb;
+
 /**
  *
  * @author David Bitterlich
  */
 public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
-
     /**
      * Creates new form bsGuiMain
      */
     private final TableRowSorter<TableModel> rowSorter;
-    private boolean debugMode = true;
-    private boolean preferePackagedDl = true;
+    
+    
     public bsGuiMain() {
-        checkYouTubeDL();
-        updateYouTubeDL();
+        bsWorker = new bsBackgroundWorker();
+        bsWorker.loadFromConfig();
+        GuiObject = this;
         initComponents();
-                
+        
         checkSeriesFile();
         jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jTable1.setRowSelectionAllowed(true);
@@ -105,6 +111,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jProgressBar2 = new JProgressBar();
         jLabel5 = new JLabel();
         jLabel6 = new JLabel();
+        jButton3 = new JButton();
         jMenuBar1 = new JMenuBar();
         jMenu1 = new JMenu();
         jMenuItem2 = new JMenuItem();
@@ -207,6 +214,15 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         jLabel6.setText("Kein Download");
         jLabel6.setName("jLabel6"); // NOI18N
 
+        jButton3.setText("edit");
+        jButton3.setEnabled(false);
+        jButton3.setName("jButton3"); // NOI18N
+        jButton3.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         jMenuBar1.setName("jMenuBar1"); // NOI18N
 
         jMenu1.setLabel("Datei");
@@ -269,8 +285,10 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                         .addComponent(jComboBox1, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jCheckBox1)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton2, GroupLayout.PREFERRED_SIZE, 198, GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton3, GroupLayout.PREFERRED_SIZE, 79, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton2))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                             .addComponent(jLabel3)
@@ -297,7 +315,8 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     .addComponent(jCheckBox1)
                     .addComponent(jButton2)
                     .addComponent(jLabel2)
-                    .addComponent(jComboBox1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jComboBox1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton3))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel3)
@@ -358,7 +377,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     }//GEN-LAST:event_jTable1MousePressed
 
     private String replaceStringByParams(String[] episodeVariables) {
-        String resultStr = FileNameMask;
+        String resultStr = bsWorker.FileNameMask;
         for (String toReplaceString: episodeVariables)
         {
             String[] toReplaceArray = toReplaceString.split("/");
@@ -374,7 +393,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         } 
         return returnString;
     }
-    public String youtubeDlBinary="";
     private String correctify(String Input) {
         String toRemove = "-.,:;/'_<>|";
         for (int i = 0; i < toRemove.length(); i++) {
@@ -382,18 +400,18 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
         return Input;
     }
-    public void debugPrint(String msg) {
-        if (debugMode) {
-            System.out.println(msg);
-        }
-    }
+
     private void jButton2ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-//        bsGuiDownloadQue bsDownloadQue = new bsGuiDownloadQue(this, true);
-//        bsDownloadQue.importDownloadQue(DownloadQue);
-//        bsDownloadQue.setVisible(true);
+        
         if (jButton2.getText().contains("starten")) {
-            JFileChooser chooser = new JFileChooser();
-            chooser.setCurrentDirectory(new java.io.File("."));
+            //TODO: Add option to choose wether JFileChooser or FileDialog from AWT
+            
+            FileDialog dialog = new FileDialog(GuiObject, "Select a target directory", FileDialog.SAVE);
+            dialog.setDirectory(bsWorker.userDir);
+            dialog.setVisible(true);
+            
+            /*JFileChooser chooser = new JFileChooser();
+            chooser.setCurrentDirectory(new java.io.File(bsWorker.userDir));
             chooser.setDialogTitle("Verzeichnis zum Herunterladen auswählen...");
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setAcceptAllFileFilterUsed(false);
@@ -401,7 +419,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             int returnValue = chooser.showOpenDialog(null);
             String FileDir="";
             if (returnValue == JFileChooser.APPROVE_OPTION) {
-                debugPrint("Wechsle Ordner " + chooser.getSelectedFile().toString());
+                bsWorker.debugPrint("Wechsle Ordner " + chooser.getSelectedFile().toString());
                 FileDir = chooser.getSelectedFile().toString();
             } else {
                 FileDir = "Downloads";
@@ -416,7 +434,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             System.setProperty("user.dir", FileDir);
             final List<String> dq = DownloadQue;
             for (String Link: DownloadQue) {
-                debugPrint("DownloadQue: " + Link);
+                bsWorker.debugPrint("DownloadQue: " + Link);
             }
             final String fd = FileDir;
             DownloadProcess = new bsDownProc(
@@ -425,11 +443,11 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     getJProgressBar2(),
                     getJButton2(),
                     getjLabel6(),
-                    youtubeDlBinary,
+                    bsWorker.youtubeDlBinary,
                     fd,
                     jTable1.getValueAt(jTable1.getSelectedRow(), 0).toString(),
                     DownloadManagerPath,
-                    FileNameMask
+                    bsWorker.FileNameMask
             );
             DownloadProcess.start();
         } else {
@@ -443,7 +461,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             pb2.setMinimum(0);
             pb2.setMaximum(100);
             pb2.setValue(0);
-            jLabel6.setText("Kein Download");
+            jLabel6.setText("Kein Download");*/
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -477,6 +495,10 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         bsAbout aboutWindow = new bsAbout(this, true);
         aboutWindow.setVisible(true);
     }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jButton3ActionPerformed(ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        bsDownloadQue bsQueEditor = new bsDownloadQue();
+    }//GEN-LAST:event_jButton3ActionPerformed
     public Object getJProgressBar1() {
         return this.jProgressBar1;
     }
@@ -489,8 +511,12 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     public Object getjLabel6() {
         return this.jLabel6;
     }
+    protected Object getBsWorker() {
+        return bsWorker;
+    }
     private void updateComboBoxEvent() {
         jButton2.setEnabled(false);
+        jButton3.setEnabled(false);
         if (jComboBox1.isEnabled() && jComboBox1.getSelectedIndex() > 0 && !jButton2.getText().contains("abbrechen")) {
             int SelectedRow = jTable1.getSelectedRow();
             int CellValue = Integer.parseInt(jTable1.getModel()
@@ -502,6 +528,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 getAllLinksByHoster(ComboCaption[0]);
             }
             jButton2.setEnabled(true);
+            jButton3.setEnabled(true);
         }
     }
     public void itemStateChanged(ItemEvent e) {
@@ -513,22 +540,9 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
      * @param args the command line arguments
      */
     private List<String> EpisodeListWithHoster;
-    private String userAgent = "Mozilla/5.0 Chrome/26.0.1410.64 Safari/537.31";
+    
     private List<String> MovieLinks;
-    public List<String> getLinksFromPage(String URL, String SearchString) throws IOException {
-        List<String> SearchResults = new ArrayList<String>();
-        Document doc = Jsoup.connect(URL)
-                .followRedirects(true)
-                .ignoreHttpErrors(true)
-                .timeout(30000)
-                .userAgent(userAgent)
-                .get();
-        Elements Links = doc.select(SearchString);
-        for (Element Link: Links) {
-            SearchResults.add(Link.attr("abs:href"));
-        }
-        return SearchResults;
-    }
+
     private boolean SupportedHosterByURL(String URL) {
         String[] SplittedURL = URL.split("/");
         String Hoster = SplittedURL[SplittedURL.length-1];
@@ -556,7 +570,14 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         }
         return NumberOfSearchResults;
     }
-    public List<String> DownloadQue = new ArrayList<String>();
+    private static List<String> DownloadQue = new ArrayList<String>();
+    public static List<String> getDownloadQue() {
+        return DownloadQue;
+    }
+    protected static void writeDownloadQue(List<String> TempQue) {
+        DownloadQue.clear();
+        DownloadQue.addAll(TempQue);
+    }
     private void updateHosterComboBox() {
         jComboBox1.removeAllItems();
         jComboBox1.addItem("");
@@ -596,23 +617,23 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 .followRedirects(true)
                 .ignoreHttpErrors(true)
                 .timeout(30000)
-                .userAgent(userAgent)
+                .userAgent(bsWorker.userAgent)
                 .get();
         Elements seasons = doc.select("ul.pages li:not(.button) a");
         int episodes = 0;
         for (Element SeasonPage: seasons) {
             List<String> TempEpisodes = new ArrayList<String>();
-            TempEpisodes = getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a");
+            TempEpisodes = bsWorker.getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a");
             
             EpisodeListWithHoster.addAll(TempEpisodes);
-            episodes += getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a strong").size();
+            episodes += bsWorker.getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a strong").size();
         }
         Elements Movies = doc.select("ul.pages li.button a");
         if (Movies.size() > 0 && Movies.get(0).text().contains("Film")) {
             List<String> TempMovies = new ArrayList<String>();
-            TempMovies = getLinksFromPage(Movies.get(0).attr("abs:href"), "div#sp_left table tbody tr td a");
+            TempMovies = bsWorker.getLinksFromPage(Movies.get(0).attr("abs:href"), "div#sp_left table tbody tr td a");
             MovieLinks.addAll(TempMovies);
-            episodes += getLinksFromPage(Movies.get(0).attr("abs:href"), "div#sp_left table tbody tr td a strong").size();
+            episodes += bsWorker.getLinksFromPage(Movies.get(0).attr("abs:href"), "div#sp_left table tbody tr td a strong").size();
         }
         updateHosterComboBox();
         if (jCheckBox1.isSelected()) { return EpisodeListWithHoster.size() + MovieLinks.size(); }
@@ -682,7 +703,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                     .followRedirects(true)
                     .ignoreHttpErrors(true)
                     .timeout(30000)
-                    .userAgent(userAgent)
+                    .userAgent(bsWorker.userAgent)
                     .get();
                 series = doc.select("div.genre ul > li > a");
                 DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
@@ -721,7 +742,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         hosters = new ArrayList<String>();
         try {
             Process p = new ProcessBuilder(
-            youtubeDlBinary, "--list-extractors").start();
+            bsWorker.youtubeDlBinary, "--list-extractors").start();
             InputStream is = p.getInputStream();
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
@@ -754,94 +775,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             }
         }
     }
-    // Settings
-    private String FileNameMask;
-    private void loadFromConfig() {
-        File f = new File("settings.conf");
-        String line;
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(f));
-            do {
-                line = br.readLine();
-                String[] SplittedSetting = line.split("=");
-                switch (SplittedSetting[0]) {
-                    case "FileNameMask":
-                        FileNameMask = SplittedSetting[1];
-                        break;
-                    // TODO: weitere Settings einstellen
-                }
-            } while (line != null);
-            br.close();
-        } catch (Exception e) {
-            /*
-                <name> = Name der Serie
-                <episode> = Episodennummer
-                <season> = Staffel
-                <title> = Titel der Episode
-                <ext> = Dateityp (wird für youtube-dl durch %(ext) ersetzt)
-            */
-            FileNameMask = "<name> S<season>E<episode> <title>.<ext>";
-        }
-    }
-    private void updateYouTubeDL() {
-        try {
-            List<String> arguments = new ArrayList<String>();
-            arguments.add(youtubeDlBinary);
-            arguments.add("-U");
-            System.out.println("Check for Update of YouTubeDl");
-            ProcessBuilder pbuilder = new ProcessBuilder(arguments);
-            pbuilder.redirectErrorStream(true);
-            Process p = pbuilder.start();
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            String line;
-            while ((line = bre.readLine()) != null) {
-                System.err.println(line);
-            }
-            bre.close();
-            while ((line = br.readLine()) != null) {
-                System.out.println(line);
-            }
-            System.out.println("Process finished.");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-    }
-    private void checkYouTubeDL() {
-        String DefaultPath = "";
-        if (preferePackagedDl || System.getProperty("os.name").contains("Windows")) {
-            DefaultPath = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath()).getParent().toString()
-                + File.separator
-                + "tools"
-                + File.separator;
-        }
-        if (System.getProperty("os.name").contains("Linux") && !preferePackagedDl) {
-            String TestPathString = "/usr/bin/youtube-dl";
-            File TestPath = new File(TestPathString);
-            if (TestPath.exists() && !TestPath.isDirectory()) {
-                DefaultPath = TestPathString;
-            }
-        } else {
-            if (System.getProperty("os.name").contains("Windows")) {
-                DefaultPath += "youtube-dl-windows" 
-                        + File.separator 
-                        + "youtube-dl.exe";
-            } else {
-                DefaultPath += "youtube-dl-linux"
-                        + File.separator
-                        + "youtube-dl";
-            }
-        }
-        debugPrint(DefaultPath);
-        File DlPath = new File(DefaultPath);
-        if (!DlPath.exists() || DlPath.isDirectory()) {
-            System.err.println("YouTube-Dl Binary not found!");
-            System.exit(1);
-        }
-        youtubeDlBinary = DefaultPath;
-    }
     // <editor-fold defaultstate="collapsed" desc="Creating List of supported Hosters">      
     /*private void saveList() {
         try {
@@ -914,6 +848,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 if (info.getName().toLowerCase().contains(Design.toLowerCase())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     useDesign = true;
+                    bsBackgroundWorker.guiDesign = info.getName().toLowerCase();
                     break;
                 }
             }
@@ -932,7 +867,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 bsGuiMain MainWindow = new bsGuiMain();
-                MainWindow.loadFromConfig();
                 MainWindow.setTitle("Burning Series Loader");
                 ImageIcon img = new ImageIcon("icon");
                 MainWindow.setIconImage(img.getImage());
@@ -949,6 +883,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton jButton1;
     private JButton jButton2;
+    private JButton jButton3;
     private JCheckBox jCheckBox1;
     private JComboBox<String> jComboBox1;
     private JLabel jLabel1;
@@ -971,4 +906,6 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
     // End of variables declaration//GEN-END:variables
     //private pbHandler pbHnd_pbar1;
     private bsDownProc DownloadProcess;
+    private bsBackgroundWorker bsWorker;
+    private bsGuiMain GuiObject;
 }

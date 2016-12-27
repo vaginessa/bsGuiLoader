@@ -5,6 +5,10 @@
  */
 package bsguiloader;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author david
@@ -14,10 +18,40 @@ public class bsDownloadQue extends javax.swing.JFrame {
     /**
      * Creates new form bsDownloadQue
      */
+    /*--- Variables ---*/
+    private List<String> DownloadQue = new ArrayList<String>();
+    /*--- Constructor ---*/
     public bsDownloadQue() {
         initComponents();
+        DownloadQue = getDownloadQue();
+        loadDownloadQue();
+        this.setVisible(true);
     }
-
+    
+    // Methods
+    private void loadDownloadQue() {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        String title; 
+        for (String item: DownloadQue) {
+            title="";
+            String[] URLSplitted = item.split("/");
+            // Element 6 = Titel
+            String[] TitleSplitted = URLSplitted[6].split("-");
+            for (int i = 1; i < TitleSplitted.length; i++) {
+                title = title + TitleSplitted[i] + " ";
+            }
+            model.addRow(new Object[] {
+                title,
+                item
+            });
+        }
+    }
+    private List<String> getDownloadQue() {
+        return bsGuiMain.getDownloadQue();
+    }
+    private void writeDownloadQue(List<String> TempQue) {
+        bsGuiMain.writeDownloadQue(TempQue);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -34,21 +68,26 @@ public class bsDownloadQue extends javax.swing.JFrame {
         jButton3 = new javax.swing.JButton();
         jButton5 = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Titel", "Fortschritt", "URL"
+                "Titel", "URL"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.String.class, java.lang.Object.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -59,16 +98,44 @@ public class bsDownloadQue extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jTable1MousePressed(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTable1);
 
-        jButton1.setText("Download starten");
+        jButton1.setText("Änderungen anwenden");
+        jButton1.setEnabled(false);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("v");
+        jButton2.setEnabled(false);
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jButton3.setText("^");
+        jButton3.setEnabled(false);
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         jButton5.setText("-");
-        jButton5.setActionCommand("-");
+        jButton5.setEnabled(false);
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -102,40 +169,110 @@ public class bsDownloadQue extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        writeDownloadQue(DownloadQue);
+        jButton1.setEnabled(false);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        writeDownloadQue(DownloadQue);
+    }//GEN-LAST:event_formWindowClosing
+
+    private void jTable1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MousePressed
+        jButton2.setEnabled(false);
+        jButton3.setEnabled(false);
+        jButton5.setEnabled(false);
+        if (jTable1.getSelectedRow() > -1 && jTable1.getSelectedRow() < jTable1.getRowCount()) {
+            jButton2.setEnabled(true);
+            jButton3.setEnabled(true);
+            jButton5.setEnabled(true);
+        }
+    }//GEN-LAST:event_jTable1MousePressed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        int[] rowIndexes = jTable1.getSelectedRows();
+        DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
+        if (rowIndexes.length > 0) {
+            for (int i = rowIndexes.length-1; i >= 0; i--) {
+                String URLtoRemove = jTable1.getValueAt(rowIndexes[i], 1).toString();
+                DownloadQue.remove(DownloadQue.indexOf(URLtoRemove));
+                model.removeRow(rowIndexes[i]);
+                jTable1.clearSelection();
+                jButton5.setEnabled(false);
+                jButton3.setEnabled(false);
+                jButton2.setEnabled(false);
+                jButton1.setEnabled(true);
+            }
+        }
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void reloadDownloadQue() {
+        DownloadQue.clear();
+        for (int i = 0; i < jTable1.getRowCount(); i++) {
+            DownloadQue.add(jTable1.getValueAt(i, 1).toString());
+        }
+    }
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
+        int[] rowIndexes = jTable1.getSelectedRows();
+        if (jTable1.getSelectedRows().length > 0) {
+            int ToPosition = rowIndexes[0]-1 > 0 ? rowIndexes[0]-1 : 0;
+            model.moveRow(rowIndexes[0], rowIndexes[rowIndexes.length-1], ToPosition);
+            int ToSelect = rowIndexes[rowIndexes.length-2] > 0 ? rowIndexes[rowIndexes.length-2] : rowIndexes[rowIndexes.length-1];
+            jTable1.setRowSelectionInterval(ToPosition, ToSelect);
+            jButton1.setEnabled(true);
+            reloadDownloadQue();
+        }
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        DefaultTableModel model = (DefaultTableModel)jTable1.getModel();
+        int[] rowIndexes = jTable1.getSelectedRows();
+        if (jTable1.getSelectedRows().length > 0) {
+            int ToPosition = rowIndexes[0]+1;
+            if (rowIndexes[rowIndexes.length-1]+1 < jTable1.getRowCount()) {
+                model.moveRow(rowIndexes[0], rowIndexes[rowIndexes.length-1], ToPosition);
+                jTable1.setRowSelectionInterval(ToPosition, rowIndexes[rowIndexes.length-1]+1);
+                jButton1.setEnabled(true);
+                reloadDownloadQue();
+            }
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(bsDownloadQue.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(bsDownloadQue.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(bsDownloadQue.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(bsDownloadQue.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new bsDownloadQue().setVisible(true);
-            }
-        });
-    }
+//    public static void main(String args[]) {
+//        /* Set the Nimbus look and feel */
+//        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+//         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+//         */
+//        try {
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("Nimbus".equals(info.getName())) {
+//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                    break;
+//                }
+//            }
+//        } catch (ClassNotFoundException ex) {
+//            java.util.logging.Logger.getLogger(bsDownloadQue.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (InstantiationException ex) {
+//            java.util.logging.Logger.getLogger(bsDownloadQue.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (IllegalAccessException ex) {
+//            java.util.logging.Logger.getLogger(bsDownloadQue.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+//            java.util.logging.Logger.getLogger(bsDownloadQue.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        }
+//        //</editor-fold>
+//
+//        /* Create and display the form */
+//        java.awt.EventQueue.invokeLater(new Runnable() {
+//            public void run() {
+//                new bsDownloadQue().setVisible(true);
+//            }
+//        });
+//    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
