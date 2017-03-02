@@ -56,9 +56,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
-import java.sql.SQLException;
-import org.tmatesoft.sqljet.core.SqlJetTransactionMode;
-import org.tmatesoft.sqljet.core.table.SqlJetDb;
 
 /**
  *
@@ -406,11 +403,13 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
         if (jButton2.getText().contains("starten")) {
             //TODO: Add option to choose wether JFileChooser or FileDialog from AWT
             
-            FileDialog dialog = new FileDialog(GuiObject, "Select a target directory", FileDialog.SAVE);
+            /*FileDialog dialog = new FileDialog(GuiObject, "Select a target directory", FileDialog.SAVE);
             dialog.setDirectory(bsWorker.userDir);
             dialog.setVisible(true);
             
-            /*JFileChooser chooser = new JFileChooser();
+            String saveDir = dialog.getDirectory();*/
+            
+            JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new java.io.File(bsWorker.userDir));
             chooser.setDialogTitle("Verzeichnis zum Herunterladen auswählen...");
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -461,7 +460,7 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
             pb2.setMinimum(0);
             pb2.setMaximum(100);
             pb2.setValue(0);
-            jLabel6.setText("Kein Download");*/
+            jLabel6.setText("Kein Download");
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -619,14 +618,14 @@ public class bsGuiMain extends javax.swing.JFrame implements ItemListener {
                 .timeout(30000)
                 .userAgent(bsWorker.userAgent)
                 .get();
-        Elements seasons = doc.select("ul.pages li:not(.button) a");
+        Elements seasons = doc.select("div#seasons.frame ul.clearfix li a");
         int episodes = 0;
         for (Element SeasonPage: seasons) {
             List<String> TempEpisodes = new ArrayList<String>();
-            TempEpisodes = bsWorker.getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a");
+            TempEpisodes = bsWorker.getLinksFromPage(SeasonPage.attr("abs:href"), "section.serie table.episodes tbody tr td a");
             
             EpisodeListWithHoster.addAll(TempEpisodes);
-            episodes += bsWorker.getLinksFromPage(SeasonPage.attr("abs:href"), "div#sp_left table tbody tr td a strong").size();
+            episodes += bsWorker.getLinksFromPage(SeasonPage.attr("abs:href"), "section.serie table.episodes tbody tr td a").size();
         }
         Elements Movies = doc.select("ul.pages li.button a");
         if (Movies.size() > 0 && Movies.get(0).text().contains("Film")) {

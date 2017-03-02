@@ -154,7 +154,7 @@ public class bsDownProc extends Thread {
             }
             // Dateinamenkorrektur nach dem Schema: <Serie> S<Staffel>E<Nummer> <Titel>.<ext>
             episodeVars[1] = "<episode>" + "/" + getNulls(episodeNr) + episodeURLsplittedByHyphen[0];
-            List<String> DownloadURLresults = getLinksFromPage(URL, "div#sp_left div#video_actions div a");
+            List<String> DownloadURLresults = getLinksFromPage(URL, "div#root section.serie a.hoster-player");
             String DownloadURL;
             if (!DownloadURLresults.get(0).isEmpty()) {
                  DownloadURL = DownloadURLresults.get(0);
